@@ -285,9 +285,11 @@ async function cmdSetup() {
   let newConfig = readJson(CONFIG_PATH);
   let newEnv    = readEnv(ENV_PATH);
 
-  // 注册插件路径
+  // 注册插件路径（plugins.load.paths 是 openclaw 识别的正确 key）
+  const existingPaths = newConfig.plugins?.load?.paths ?? [];
+  const mergedPaths = Array.from(new Set([...existingPaths, PLUGIN_INSTALL_DIR]));
   newConfig = deepMerge(newConfig, {
-    plugins: { load: { dirs: [PLUGIN_INSTALL_DIR] } },
+    plugins: { load: { paths: mergedPaths } },
   });
 
   const regionIdx = await askChoice("选择 AI 模型地区", [
