@@ -391,7 +391,7 @@ async function cmdSetup(installDir) {
   ${bold(green("安装完成！"))}
 
   启动命令:
-    ${cyan(`cd ${path.join(installDir, "openclaw")} && npm start`)}
+    ${cyan(`cd ${path.join(installDir, "openclaw")} && pnpm start`)}
 
   管理后台:
     ${cyan("http://localhost:18789/opc/admin")}
