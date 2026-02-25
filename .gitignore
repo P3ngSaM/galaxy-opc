@@ -1,3 +1,9 @@
+# openclaw 核心框架（用户通过 npm install -g openclaw 安装，不纳入本仓库）
+openclaw/
+
+# 包含上游内置凭据的扩展，不提交
+openclaw/extensions/google-antigravity-auth/
+
 # 依赖
 node_modules/
 .pnp
