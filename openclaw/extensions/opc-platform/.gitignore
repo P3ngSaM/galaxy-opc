@@ -1,0 +1,54 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# TypeScript build output
+dist/
+*.js.map
+*.d.ts.map
+
+# Compiled JS (keep .ts sources, exclude compiled output)
+# Uncomment if you compile to dist:
+# dist/
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test artifacts
+test-output/
+*.test.log
+
+# Temp files
+_tmp_*
+nul
+
+# Dev scripts (not needed by end users)
+test-tools*.sh
+fix-encoding.cjs
+REVIEW.md

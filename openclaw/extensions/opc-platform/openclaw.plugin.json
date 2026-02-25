@@ -1,0 +1,17 @@
+{
+  "id": "opc-platform",
+  "name": "OPC Platform",
+  "description": "星环OPC中心 — 一人公司孵化与赋能平台",
+  "version": "0.1.0",
+  "skills": ["./skills"],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "dbPath": {
+        "type": "string",
+        "description": "SQLite 数据库文件路径，默认 ~/.openclaw/opc-platform/opc.db"
+      }
+    }
+  }
+}
