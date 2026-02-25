@@ -1,23 +1,45 @@
 # 星环 Galaxy OPC
 
-> **一人公司孵化与赋能平台** — 基于 AI 的一人公司全生命周期管理系统
+> **一人公司孵化与赋能平台** — [OpenClaw](https://github.com/openclaw/openclaw) 插件，为一人公司提供全生命周期 AI 员工服务
 
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org/)
 [![OpenClaw](https://img.shields.io/badge/OpenClaw-2026.x-orange)](https://github.com/openclaw/openclaw)
+[![npm](https://img.shields.io/npm/v/galaxy-opc)](https://www.npmjs.com/package/galaxy-opc)
 
 ---
 
 ## 是什么
 
-星环 Galaxy OPC 是一套为**一人公司（One-Person Company）** 打造的 AI 员工平台。它把公司注册、财税、合同、HR、投融资、监控等日常经营事务全部交给 AI 处理，创始人只需专注核心业务。
+星环 Galaxy OPC 是一个 **[OpenClaw](https://github.com/openclaw/openclaw) 插件**，为**一人公司（One-Person Company）** 提供 AI 员工能力。它把公司注册、财税、合同、HR、投融资、监控等日常经营事务全部交给 AI 处理，创始人只需专注核心业务。
 
-平台由两部分组成：
+> **OpenClaw** 是底层 AI 网关，负责多渠道通信（飞书、WhatsApp、微信等）和大模型调度。
+> **本仓库** 是运行在 OpenClaw 上的业务插件，提供 11 个工具模块和 Web 管理后台。
 
-| 组件 | 说明 |
-|------|------|
-| **OpenClaw** | 多渠道 AI 网关，负责与大模型通信、管理 AI 代理 |
-| **OPC Platform 插件** | 星环业务插件，11 个工具模块 + Web 管理后台 |
+---
+
+## 快速开始
+
+一条命令完成安装和初始化：
+
+```bash
+npx galaxy-opc
+```
+
+向导会自动完成：
+
+1. 检查环境（Node.js >= 22 / git）
+2. 全局安装 OpenClaw（`npm install -g openclaw`）
+3. 下载并安装 OPC Platform 插件（自动选择 GitHub / Gitee 加速）
+4. 配置 AI 模型（选择国产或海外模型，输入 API Key）
+
+安装完成后启动服务：
+
+```bash
+openclaw gateway
+```
+
+打开管理后台：`http://localhost:18789/opc/admin`
 
 ---
 
@@ -59,85 +81,58 @@
 
 ---
 
-## 快速开始
-
-### 系统要求
-
-- Node.js >= 22
-- pnpm（`npm install -g pnpm`，向导会自动安装）
-- Git（可选，用于安装扩展 Skills）
-
-### 安装
-
-```bash
-git clone https://github.com/P3ngSaM/galaxy-opc.git
-cd galaxy-opc
-node setup.mjs
-```
-
-向导会引导你完成：
-
-1. 环境检查（Node.js / pnpm / git）
-2. 依赖安装（`pnpm install`）
-3. AI 模型配置（选择国产或海外模型）
-4. 基础配置（Gateway Token 自动生成）
-
-### 启动
-
-```bash
-cd openclaw
-npm start
-```
-
-然后打开 `http://localhost:18789/opc/admin`
-
----
-
 ## 支持的 AI 模型
 
-向导提供交互式选择，也可在 `~/.openclaw/openclaw.json` 手动配置。
+安装向导提供交互式选择，也可在 `~/.openclaw/openclaw.json` 手动配置。
 
 ### 国产模型（推荐，速度快、有免费额度）
 
-| 服务商 | 模型 | 登录方式 | 获取地址 |
-|--------|------|---------|---------|
-| 通义千问 Qwen | qwen-max / qwen-plus / qwen-turbo | OAuth 扫码 或 API Key | [dashscope.aliyun.com](https://dashscope.aliyun.com) |
-| MiniMax | MiniMax-M2.1 | OAuth 扫码 | [minimaxi.com](https://www.minimaxi.com) |
-| 豆包 Doubao | doubao-seed-1-8 / GLM-4.7 / Kimi-K2.5 | API Key | [console.volcengine.com](https://console.volcengine.com) |
-| Kimi（Moonshot） | kimi-k2.5 | API Key | [platform.moonshot.ai](https://platform.moonshot.ai) |
-| 百度千帆 | deepseek-v3 / ERNIE 系列 | API Key | [qianfan.baidu.com](https://qianfan.baidu.com) |
-| DeepSeek | deepseek-chat / deepseek-reasoner | API Key | [platform.deepseek.com](https://platform.deepseek.com) |
+| 服务商 | 推荐模型 | 获取地址 |
+|--------|---------|---------|
+| 通义千问 Qwen | qwen-plus / qwen-max | [dashscope.aliyun.com](https://dashscope.aliyun.com) |
+| MiniMax | MiniMax-M2.5 | [minimaxi.com](https://www.minimaxi.com) |
+| 豆包 Doubao（火山引擎） | doubao-seed-1-8 | [console.volcengine.com](https://console.volcengine.com) |
+| Kimi（Moonshot AI） | kimi-k2.5 | [platform.moonshot.ai](https://platform.moonshot.ai) |
+| DeepSeek | deepseek-chat | [platform.deepseek.com](https://platform.deepseek.com) |
 
 ### 海外模型
 
 | 服务商 | 推荐模型 | 获取地址 |
 |--------|---------|---------|
-| OpenAI | gpt-4o / gpt-4o-mini | [platform.openai.com](https://platform.openai.com) |
+| OpenAI | gpt-4o-mini | [platform.openai.com](https://platform.openai.com) |
 | Anthropic | claude-3-5-haiku-latest | [console.anthropic.com](https://console.anthropic.com) |
-| OpenRouter | 聚合多家模型，一个 Key | [openrouter.ai](https://openrouter.ai) |
+| OpenRouter | 聚合多家，一个 Key | [openrouter.ai](https://openrouter.ai) |
 
 ---
 
-## 配置文件说明
+## 配置说明
 
-配置存放在 `~/.openclaw/`，**不在项目目录**，重新克隆项目不会丢失配置。
+配置存放在 `~/.openclaw/`，与项目目录无关，重装插件不丢失配置。
 
 ```
 ~/.openclaw/
-├── openclaw.json   # 主配置（模型、代理、插件路径）
-└── .env            # API Keys（自动加载，不提交到 git）
+├── openclaw.json        # 主配置（模型、代理、插件路径）
+├── .env                 # API Keys（自动加载）
+└── extensions/
+    └── opc-platform/    # 插件安装目录
 ```
 
-手动修改示例（切换模型）：
+切换模型示例（编辑 `~/.openclaw/openclaw.json`）：
 
 ```json
 {
   "agents": {
     "defaults": {
-      "model": "qwen-max"
+      "model": { "primary": "dashscope/qwen-plus" }
     }
   }
 }
+```
+
+重新运行配置向导：
+
+```bash
+npx galaxy-opc setup
 ```
 
 ---
@@ -160,37 +155,36 @@ npm start
 
 ```
 galaxy-opc/
-├── setup.mjs                  # 首次配置向导
-├── .gitignore
-├── README.md
-└── openclaw/                  # OpenClaw AI 网关
-    ├── package.json
-    ├── openclaw.mjs            # CLI 入口
-    ├── src/                   # 核心源码
-    ├── extensions/
-    │   └── opc-platform/      # 星环 OPC 插件
-    │       ├── index.ts       # 插件入口
-    │       ├── src/
-    │       │   ├── tools/     # 11 个 AI 工具模块
-    │       │   ├── db/        # SQLite 数据库（19 张表）
-    │       │   ├── opc/       # 上下文注入 & 提醒服务
-    │       │   └── web/       # 管理后台 UI
-    │       └── skills/        # 11 个技能包
-    └── dist/                  # 编译产物
+├── npm-package/              # npx galaxy-opc 安装脚本
+│   └── bin/cli.mjs           # 安装向导 CLI
+├── extensions/
+│   └── opc-platform/         # OpenClaw 插件本体
+│       ├── index.ts          # 插件入口
+│       ├── src/
+│       │   ├── tools/        # 11 个 AI 工具模块
+│       │   ├── db/           # SQLite 数据库（19 张表）
+│       │   ├── opc/          # 上下文注入 & 提醒服务
+│       │   └── web/          # 管理后台 UI
+│       └── skills/           # 技能包
+└── README.md
 ```
+
+> OpenClaw 核心框架通过 `npm install -g openclaw` 独立安装，不包含在本仓库中。
 
 ---
 
 ## 开发
 
 ```bash
+# 克隆仓库
+git clone https://github.com/P3ngSaM/galaxy-opc.git
+
 # TypeScript 类型检查
-cd openclaw/extensions/opc-platform
+cd extensions/opc-platform
 npx tsc -p tsconfig.json --noEmit
 
-# 开发模式启动（跳过消息渠道连接）
-cd openclaw
-npm run gateway:dev
+# 启动（需先安装并配置 OpenClaw）
+openclaw gateway
 ```
 
 ---
