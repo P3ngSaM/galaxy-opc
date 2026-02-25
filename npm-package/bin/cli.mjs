@@ -15,8 +15,25 @@ import readline from "node:readline";
 import { execSync, spawn } from "node:child_process";
 import crypto from "node:crypto";
 
-const REPO_URL = "https://github.com/P3ngSaM/galaxy-opc.git";
+const REPO_GITHUB = "https://github.com/P3ngSaM/galaxy-opc.git";
+const REPO_GITEE  = "https://gitee.com/peng-sam/galaxy-opc.git";
 const DEFAULT_INSTALL_DIR = path.join(os.homedir(), "galaxy-opc");
+
+// 检测是否在国内网络（ping github 超时则走 Gitee）
+async function detectRepoUrl() {
+  return new Promise((resolve) => {
+    const req = spawn("git", ["ls-remote", "--exit-code", "--heads", REPO_GITHUB, "main"], {
+      stdio: "ignore",
+      timeout: 6000,
+    });
+    const timer = setTimeout(() => { req.kill(); resolve(REPO_GITEE); }, 6000);
+    req.on("close", (code) => {
+      clearTimeout(timer);
+      resolve(code === 0 ? REPO_GITHUB : REPO_GITEE);
+    });
+    req.on("error", () => { clearTimeout(timer); resolve(REPO_GITEE); });
+  });
+}
 
 // ─── 颜色工具 ───────────────────────────────────────────────────────────────
 const c = {
@@ -193,12 +210,16 @@ ${bold(cyan("  ╚════════════════════�
   separator();
   console.log(bold("  步骤 3 / 5  下载项目"));
   separator();
-  console.log(dim(`  正在从 GitHub 下载...\n`));
+
+  console.log(dim("  检测网络，自动选择最快下载源..."));
+  const repoUrl = await detectRepoUrl();
+  const repoSource = repoUrl.includes("gitee") ? "Gitee（国内加速）" : "GitHub";
+  console.log(green(`  ✓ 使用 ${repoSource}`));
+  console.log(dim(`  正在下载...\n`));
 
   ensureDir(installDir);
   try {
-    // --depth 1 只拉最新一个 commit，速度快
-    await runCommand("git", ["clone", "--depth", "1", REPO_URL, installDir]);
+    await runCommand("git", ["clone", "--depth", "1", repoUrl, installDir]);
   } catch {
     // 目录非空时用 pull
     try {
