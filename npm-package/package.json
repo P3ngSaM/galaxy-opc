@@ -1,0 +1,35 @@
+{
+  "name": "galaxy-opc",
+  "version": "0.1.0",
+  "description": "星环 Galaxy OPC — 一人公司孵化与赋能平台 AI 员工系统",
+  "keywords": [
+    "ai",
+    "opc",
+    "one-person-company",
+    "openclaw",
+    "qwen",
+    "llm",
+    "business",
+    "startup"
+  ],
+  "homepage": "https://github.com/P3ngSaM/galaxy-opc",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/P3ngSaM/galaxy-opc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/P3ngSaM/galaxy-opc/issues"
+  },
+  "license": "MIT",
+  "author": "p3ngsam",
+  "type": "module",
+  "bin": {
+    "galaxy-opc": "./bin/cli.mjs"
+  },
+  "files": [
+    "bin/"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
