@@ -236,7 +236,19 @@ ${bold(cyan("  ╚════════════════════�
   console.log(bold("  步骤 4 / 5  安装依赖"));
   separator();
   console.log(dim("  运行 pnpm install ...\n"));
-  await runCommand("pnpm", ["install"], { cwd: path.join(installDir, "openclaw") });
+  // 设置淘宝镜像加速国内依赖下载
+  try {
+    await runCommand("pnpm", ["install", "--registry", "https://registry.npmmirror.com"], { cwd: path.join(installDir, "openclaw") });
+  } catch {
+    console.log(yellow("\n  ! 首次安装失败，尝试使用官方 registry 重试..."));
+    try {
+      await runCommand("pnpm", ["install"], { cwd: path.join(installDir, "openclaw") });
+    } catch (e) {
+      console.error(red(`\n  ✗ 依赖安装失败`));
+      console.error(gray(`  可手动进入目录重试: cd ${path.join(installDir, "openclaw")} && pnpm install`));
+      process.exit(1);
+    }
+  }
   console.log(green("\n  ✓ 依赖安装完成"));
 
   // ── 步骤 5：配置模型 ────────────────────────────────────────────────────
