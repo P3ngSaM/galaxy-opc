@@ -1,972 +1,1325 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>星环 Galaxy OPC — 一人公司孵化与赋能平台</title>
   <meta name="description" content="星环OPC中心：AI时代的一站式一人公司孵化与赋能平台。基于OpenClaw AI平台的galaxy-opc-plugin插件，帮助创业者低成本启动和运营自己的公司。" />
-  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brand:     '#F97316',
-            green:     '#16A34A',
-            greenhover:'#15803D',
-            greenlight:'#F0FDF4',
-            greenborder:'#BBF7D0',
-            greenmid:  '#DCFCE7',
-            tx:        '#111827',
-            tx2:       '#4B5563',
-            tx3:       '#9CA3AF',
-            bg:        '#FAFAFA',
-            card:      '#FFFFFF',
-            bd:        '#E5E7EB',
-          },
-          fontFamily: {
-            sans: ['"Noto Sans SC"', 'sans-serif'],
-          },
-        },
-      },
-    };
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
+    /* ── Design Tokens ── */
+    :root {
+      --r: 12px;
+      --r-lg: 20px;
+      --transition: 200ms ease;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0C0A09;
+      --bg2: #161412;
+      --card: #1C1917;
+      --card2: #28231F;
+      --tx: #FAFAF9;
+      --tx2: #A8A29E;
+      --tx3: #57534E;
+      --bd: #292524;
+      --bd2: #3C3330;
+      --accent: #F97316;
+      --accent-h: #EA580C;
+      --gold: #CA8A04;
+      --gold-l: #FCD34D;
+      --glow: rgba(249,115,22,0.12);
+      --glow-card: rgba(249,115,22,0.06);
+      --shadow: 0 4px 24px rgba(0,0,0,0.4);
+      --shadow-lg: 0 16px 48px rgba(0,0,0,0.5);
+    }
+
+    [data-theme="light"] {
+      --bg: #FAFAF9;
+      --bg2: #F5F4F2;
+      --card: #FFFFFF;
+      --card2: #F5F4F2;
+      --tx: #1C1917;
+      --tx2: #57534E;
+      --tx3: #A8A29E;
+      --bd: #E7E5E4;
+      --bd2: #D6D3D1;
+      --accent: #EA580C;
+      --accent-h: #C2410C;
+      --gold: #B45309;
+      --gold-l: #D97706;
+      --glow: rgba(234,88,12,0.08);
+      --glow-card: rgba(234,88,12,0.04);
+      --shadow: 0 4px 16px rgba(0,0,0,0.08);
+      --shadow-lg: 0 16px 40px rgba(0,0,0,0.12);
+    }
+
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
+
     html { scroll-behavior: smooth; }
 
-    .card-lift {
-      transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
-    }
-    .card-lift:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 32px rgba(22,163,74,0.10);
-      border-color: #86EFAC;
-    }
-
-    /* Hero gradient — light green */
-    .hero-bg {
-      background: linear-gradient(160deg, #F0FDF4 0%, #DCFCE7 40%, #FAFAFA 100%);
+    body {
+      font-family: 'DM Sans', 'Noto Sans SC', sans-serif;
+      background: var(--bg);
+      color: var(--tx);
+      line-height: 1.6;
+      transition: background var(--transition), color var(--transition);
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Plugin badge pill */
-    .plugin-badge {
-      background: linear-gradient(90deg, #F0FDF4, #DCFCE7);
-      border: 1px solid #86EFAC;
+    h1, h2, h3, h4, h5, .display {
+      font-family: 'Space Grotesk', 'Noto Sans SC', sans-serif;
+      line-height: 1.2;
     }
 
-    /* Section accent line */
-    .accent-bar {
-      width: 40px; height: 4px;
-      background: linear-gradient(90deg, #16A34A, #F97316);
-      border-radius: 2px;
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+    /* ── Layout ── */
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+    .section { padding: 96px 0; }
+    .section-sm { padding: 64px 0; }
+
+    /* ── Typography ── */
+    .display-xl {
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .display-lg {
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .display-md {
+      font-size: clamp(1.4rem, 2.5vw, 2rem);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .body-lg { font-size: 1.125rem; line-height: 1.7; }
+    .body-md { font-size: 1rem; line-height: 1.7; }
+    .body-sm { font-size: 0.875rem; line-height: 1.6; }
+
+    .accent { color: var(--accent); }
+    .gold { color: var(--gold-l); }
+    .muted { color: var(--tx2); }
+
+    /* ── Components ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: var(--r);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 0 0 var(--glow);
+    }
+    .btn-primary:hover {
+      background: var(--accent-h);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px var(--glow);
+    }
+    .btn-secondary {
+      background: var(--card2);
+      color: var(--tx);
+      border: 1px solid var(--bd);
+    }
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .btn-ghost {
+      color: var(--tx2);
+      padding: 10px 16px;
+    }
+    .btn-ghost:hover { color: var(--accent); }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .badge-accent {
+      background: var(--glow);
+      color: var(--accent);
+      border: 1px solid rgba(249,115,22,0.2);
+    }
+    .badge-gold {
+      background: rgba(202,138,4,0.12);
+      color: var(--gold-l);
+      border: 1px solid rgba(202,138,4,0.2);
     }
 
-    /* CTA section */
-    .cta-bg {
-      background: linear-gradient(135deg, #14532D 0%, #166534 60%, #15803D 100%);
+    .card {
+      background: var(--card);
+      border: 1px solid var(--bd);
+      border-radius: var(--r-lg);
+      padding: 28px;
+      transition: all var(--transition);
+    }
+    .card:hover {
+      border-color: var(--bd2);
+      box-shadow: var(--shadow);
+      transform: translateY(-2px);
+    }
+    .card-glow:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), var(--shadow);
     }
 
-    /* Audience tabs */
-    .audience-panel { display: none; }
-    .audience-panel.active { display: block; }
-    .tab-active { background:#16A34A; color:#fff; border-color:#16A34A; }
-
-    /* Timeline */
-    .tl-dot::before {
-      content:'';
-      position:absolute; left:-28px; top:6px;
-      width:12px; height:12px; border-radius:50%;
-      background:#16A34A; border:3px solid #FAFAFA;
-      box-shadow:0 0 0 2px #16A34A;
+    .divider {
+      height: 1px;
+      background: var(--bd);
+      margin: 0;
     }
 
-    /* Mobile menu */
-    #mobile-menu { transition: max-height 300ms ease, opacity 300ms ease; max-height:0; opacity:0; overflow:hidden; }
-    #mobile-menu.open { max-height:500px; opacity:1; }
-
-    /* Stat number */
-    .stat-num {
-      background: linear-gradient(135deg, #16A34A, #F97316);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    /* ── Tag chips ── */
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.8125rem;
+      background: var(--card2);
+      color: var(--tx2);
+      border: 1px solid var(--bd);
     }
 
-    /* Code block */
-    .code-block {
-      background: #111827;
-      border-radius: 10px;
-      font-family: 'Menlo', 'Consolas', monospace;
-      font-size: 13px;
+    /* ── Section header ── */
+    .section-header { text-align: center; margin-bottom: 56px; }
+    .section-header .eyebrow {
+      display: inline-block;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .section-header p {
+      max-width: 600px;
+      margin: 16px auto 0;
+      color: var(--tx2);
+      font-size: 1.0625rem;
       line-height: 1.7;
     }
-    .code-block .kw  { color: #7DD3FC; }
-    .code-block .str { color: #86EFAC; }
-    .code-block .cm  { color: #6B7280; }
-    .code-block .fn  { color: #FCA5A5; }
-    .code-block .nm  { color: #FCD34D; }
+
+    /* ── Grid ── */
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+    @media (max-width: 900px) {
+      .grid-3 { grid-template-columns: 1fr 1fr; }
+      .grid-4 { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .section { padding: 64px 0; }
+    }
+
+    /* ── Navbar ── */
+    #navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      background: rgba(12,10,9,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--bd);
+      transition: background var(--transition), border-color var(--transition);
+    }
+    [data-theme="light"] #navbar {
+      background: rgba(250,250,249,0.88);
+    }
+    .nav-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .nav-logo img {
+      height: 32px;
+      width: auto;
+    }
+    .nav-spacer { flex: 1; }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav-links a {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--tx2);
+      transition: color var(--transition), background var(--transition);
+    }
+    .nav-links a:hover { color: var(--tx); background: var(--card2); }
+
+    /* Theme toggle */
+    #theme-toggle {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--tx2);
+      background: var(--card2);
+      border: 1px solid var(--bd);
+      transition: all var(--transition);
+      flex-shrink: 0;
+    }
+    #theme-toggle:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+    #theme-toggle svg { width: 18px; height: 18px; }
+
+    @media (max-width: 680px) {
+      .nav-links { display: none; }
+    }
+
+    /* ── Hero ── */
+    #hero {
+      padding: 160px 0 96px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-glow {
+      position: absolute;
+      top: 0; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 400px;
+      background: radial-gradient(ellipse at 50% 0%, var(--glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-content { position: relative; z-index: 1; }
+    .hero-logo {
+      margin: 0 auto 32px;
+      height: 72px;
+      width: auto;
+    }
+    .hero-center { text-align: center; max-width: 800px; margin: 0 auto; }
+    .hero-title {
+      font-size: clamp(2.2rem, 5.5vw, 4.2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 24px;
+    }
+    .hero-title .line2 { color: var(--accent); }
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--tx2);
+      line-height: 1.7;
+      margin-bottom: 40px;
+      max-width: 640px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .hero-stats {
+      margin-top: 72px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--bd);
+      border: 1px solid var(--bd);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+    @media (max-width: 700px) {
+      .hero-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+    .stat-item {
+      background: var(--card);
+      padding: 28px 20px;
+      text-align: center;
+    }
+    .stat-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.8125rem;
+      color: var(--tx2);
+      margin-top: 6px;
+    }
+
+    /* ── Plugin section ── */
+    #plugin {
+      background: var(--bg2);
+      border-top: 1px solid var(--bd);
+      border-bottom: 1px solid var(--bd);
+    }
+    .plugin-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+    @media (max-width: 800px) {
+      .plugin-grid { grid-template-columns: 1fr; gap: 40px; }
+    }
+    .code-block {
+      background: var(--bg);
+      border: 1px solid var(--bd);
+      border-radius: var(--r);
+      padding: 20px 24px;
+      font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+      font-size: 0.875rem;
+      line-height: 1.7;
+      color: var(--tx2);
+      overflow-x: auto;
+    }
+    [data-theme="dark"] .code-block { background: #080706; }
+    .code-block .cmd { color: var(--accent); font-weight: 600; }
+    .code-block .cmt { color: var(--tx3); }
+    .code-block .str { color: var(--gold-l); }
+    .tool-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .tool-chip {
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      background: var(--card2);
+      color: var(--tx2);
+      border: 1px solid var(--bd);
+    }
+
+    /* ── Pillars (3-column) ── */
+    .pillar-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--glow-card);
+      border: 1px solid rgba(249,115,22,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .pillar-icon svg { width: 24px; height: 24px; color: var(--accent); }
+
+    /* ── Business Model ── */
+    #model { background: var(--bg2); border-top: 1px solid var(--bd); border-bottom: 1px solid var(--bd); }
+    .model-flow {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      border: 1px solid var(--bd);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+      margin-top: 48px;
+    }
+    @media (max-width: 800px) {
+      .model-flow { flex-direction: column; }
+    }
+    .model-step {
+      flex: 1;
+      padding: 28px 24px;
+      background: var(--card);
+      position: relative;
+    }
+    .model-step + .model-step {
+      border-left: 1px solid var(--bd);
+    }
+    @media (max-width: 800px) {
+      .model-step + .model-step { border-left: none; border-top: 1px solid var(--bd); }
+    }
+    .model-step-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--bd2);
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    .model-step h4 { font-size: 1.0625rem; font-weight: 600; margin-bottom: 8px; }
+    .model-step p { font-size: 0.875rem; color: var(--tx2); line-height: 1.6; }
+
+    .revenue-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 48px;
+    }
+    @media (max-width: 700px) { .revenue-grid { grid-template-columns: 1fr; } }
+    .revenue-card {
+      background: var(--card);
+      border: 1px solid var(--bd);
+      border-radius: var(--r);
+      padding: 24px;
+    }
+    .revenue-card .amount {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--gold-l);
+    }
+    .revenue-card .label { font-size: 0.875rem; color: var(--tx2); margin-top: 6px; }
+
+    /* ── Audience tabs ── */
+    #audience { background: var(--bg); }
+    .tab-nav {
+      display: flex;
+      gap: 4px;
+      background: var(--card2);
+      border: 1px solid var(--bd);
+      border-radius: 12px;
+      padding: 4px;
+      width: fit-content;
+      margin: 0 auto 40px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .tab-btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--tx2);
+      transition: all var(--transition);
+    }
+    .tab-btn:hover { color: var(--tx); background: var(--card); }
+    .tab-btn.active {
+      background: var(--card);
+      color: var(--tx);
+      font-weight: 600;
+      box-shadow: var(--shadow);
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .audience-card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--bd);
+      border-radius: var(--r-lg);
+      padding: 40px;
+    }
+    .audience-card h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+    .audience-card .role { font-size: 0.875rem; color: var(--accent); font-weight: 600; margin-bottom: 20px; }
+    .pain-list { list-style: none; margin: 16px 0; }
+    .pain-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--bd);
+      font-size: 0.9375rem;
+      color: var(--tx2);
+    }
+    .pain-list li:last-child { border-bottom: none; }
+    .pain-list li::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      margin-top: 7px;
+      flex-shrink: 0;
+    }
+    .solution-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+
+    /* ── Roadmap ── */
+    #roadmap { background: var(--bg2); border-top: 1px solid var(--bd); border-bottom: 1px solid var(--bd); }
+    .roadmap-track {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      position: relative;
+    }
+    @media (max-width: 900px) { .roadmap-track { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .roadmap-track { grid-template-columns: 1fr; } }
+    .phase-card {
+      background: var(--card);
+      border: 1px solid var(--bd);
+      border-radius: var(--r-lg);
+      padding: 24px;
+    }
+    .phase-card.current {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), var(--shadow);
+    }
+    .phase-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--tx3);
+      margin-bottom: 8px;
+    }
+    .phase-card.current .phase-label { color: var(--accent); }
+    .phase-title { font-size: 1rem; font-weight: 700; margin-bottom: 12px; }
+    .phase-items { list-style: none; }
+    .phase-items li {
+      font-size: 0.8125rem;
+      color: var(--tx2);
+      padding: 3px 0;
+      display: flex;
+      gap: 8px;
+    }
+    .phase-items li::before { content: '—'; color: var(--tx3); flex-shrink: 0; }
+
+    /* ── About / Team ── */
+    #about { background: var(--bg); }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+    @media (max-width: 800px) { .about-grid { grid-template-columns: 1fr; } }
+    .values-list { list-style: none; }
+    .values-list li {
+      display: flex;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--bd);
+    }
+    .values-list li:last-child { border-bottom: none; }
+    .values-list .v-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: var(--glow-card);
+      border: 1px solid rgba(249,115,22,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .values-list .v-icon svg { width: 16px; height: 16px; color: var(--accent); }
+    .values-list .v-text strong { display: block; font-weight: 600; font-size: 0.9375rem; margin-bottom: 2px; }
+    .values-list .v-text span { font-size: 0.8125rem; color: var(--tx2); }
+    .partner-logos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .partner-tag {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      background: var(--card2);
+      border: 1px solid var(--bd);
+      color: var(--tx);
+    }
+
+    /* ── CTA ── */
+    #cta {
+      text-align: center;
+      background: var(--bg2);
+      border-top: 1px solid var(--bd);
+    }
+    .cta-inner {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .cta-logo {
+      height: 56px;
+      width: auto;
+      margin: 0 auto 32px;
+    }
+    .cta-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 36px;
+    }
+    .email-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--tx2);
+      font-size: 0.9375rem;
+      transition: color var(--transition);
+    }
+    .email-link:hover { color: var(--accent); }
+    .email-link svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--bg);
+      border-top: 1px solid var(--bd);
+      padding: 40px 0;
+    }
+    .footer-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .footer-logo img { height: 24px; width: auto; }
+    .footer-tagline { font-size: 0.875rem; color: var(--tx3); margin-top: 4px; }
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .footer-links a { font-size: 0.875rem; color: var(--tx3); transition: color var(--transition); }
+    .footer-links a:hover { color: var(--tx2); }
+    .footer-copy { font-size: 0.8125rem; color: var(--tx3); }
   </style>
 </head>
-<body class="bg-bg text-tx font-sans antialiased">
+<body>
 
-  <!-- ════════════════════════════════════════ NAV -->
-  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur border-b border-bd" role="navigation" aria-label="主导航">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-
-        <!-- Logo -->
-        <a href="#" class="flex items-center gap-2 cursor-pointer" aria-label="星环 Galaxy OPC 首页">
-          <img src="../galaxy.png" alt="Galaxy logo" class="h-8 w-auto" />
-          <div class="flex flex-col leading-tight">
-            <span class="text-tx font-bold text-base tracking-tight">星环 Galaxy</span>
-            <span class="text-green text-xs font-semibold tracking-widest uppercase">OPC 平台</span>
-          </div>
-        </a>
-
-        <!-- Desktop links -->
-        <div class="hidden md:flex items-center gap-1">
-          <a href="#plugin"   class="text-tx2 hover:text-green px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer hover:bg-greenlight">插件介绍</a>
-          <a href="#solution" class="text-tx2 hover:text-green px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer hover:bg-greenlight">平台能力</a>
-          <a href="#model"    class="text-tx2 hover:text-green px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer hover:bg-greenlight">商业模式</a>
-          <a href="#audience" class="text-tx2 hover:text-green px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer hover:bg-greenlight">合作对象</a>
-          <a href="#roadmap"  class="text-tx2 hover:text-green px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer hover:bg-greenlight">实施计划</a>
-          <a href="#contact"  class="ml-2 bg-green hover:bg-greenhover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer">联系我们</a>
-        </div>
-
-        <!-- Mobile hamburger -->
-        <button id="menu-btn" class="md:hidden p-2 rounded-lg hover:bg-greenlight transition-colors duration-200 cursor-pointer text-tx2" aria-label="菜单" aria-expanded="false">
-          <svg id="ico-open"  class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-          <svg id="ico-close" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-
-      <!-- Mobile menu -->
-      <div id="mobile-menu">
-        <div class="pb-4 flex flex-col gap-1 border-t border-bd pt-3">
-          <a href="#plugin"   class="mobile-link text-tx2 hover:text-green px-3 py-2 rounded-lg text-sm font-medium hover:bg-greenlight transition-colors duration-200 cursor-pointer">插件介绍</a>
-          <a href="#solution" class="mobile-link text-tx2 hover:text-green px-3 py-2 rounded-lg text-sm font-medium hover:bg-greenlight transition-colors duration-200 cursor-pointer">平台能力</a>
-          <a href="#model"    class="mobile-link text-tx2 hover:text-green px-3 py-2 rounded-lg text-sm font-medium hover:bg-greenlight transition-colors duration-200 cursor-pointer">商业模式</a>
-          <a href="#audience" class="mobile-link text-tx2 hover:text-green px-3 py-2 rounded-lg text-sm font-medium hover:bg-greenlight transition-colors duration-200 cursor-pointer">合作对象</a>
-          <a href="#roadmap"  class="mobile-link text-tx2 hover:text-green px-3 py-2 rounded-lg text-sm font-medium hover:bg-greenlight transition-colors duration-200 cursor-pointer">实施计划</a>
-          <a href="#contact"  class="mobile-link bg-green hover:bg-greenhover text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors duration-200 cursor-pointer text-center mt-1">联系我们</a>
-        </div>
-      </div>
+  <!-- ── NAVBAR ── -->
+  <nav id="navbar">
+    <div class="nav-inner">
+      <a class="nav-logo" href="#hero">
+        <img id="nav-logo-img" src="galaxy.png" alt="Galaxy OPC" />
+      </a>
+      <div class="nav-spacer"></div>
+      <nav class="nav-links">
+        <a href="#plugin">平台介绍</a>
+        <a href="#solution">解决方案</a>
+        <a href="#model">商业模式</a>
+        <a href="#audience">服务对象</a>
+        <a href="#roadmap">发展路径</a>
+        <a href="#cta">联系我们</a>
+      </nav>
+      <button id="theme-toggle" onclick="toggleTheme()" aria-label="切换深浅色模式" title="切换主题">
+        <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"/>
+        </svg>
+        <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display:none">
+          <circle cx="12" cy="12" r="5"/>
+          <path stroke-linecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </button>
     </div>
   </nav>
 
-  <!-- ════════════════════════════════════════ HERO -->
-  <section class="hero-bg min-h-screen flex items-center pt-16 px-4 sm:px-6 lg:px-8" aria-labelledby="hero-h1">
-    <div class="max-w-7xl mx-auto w-full py-20 lg:py-28">
-      <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+  <!-- ── HERO ── -->
+  <section id="hero">
+    <div class="hero-glow"></div>
+    <div class="container hero-content">
+      <div class="hero-center">
+        <img id="hero-logo" class="hero-logo" src="galaxy.png" alt="Galaxy OPC" />
+        <div style="margin-bottom: 20px;">
+          <span class="badge badge-accent">星环 Galaxy OPC Platform</span>
+        </div>
+        <h1 class="hero-title">
+          AI时代的<br><span class="line2">一人公司孵化与赋能平台</span>
+        </h1>
+        <p class="hero-sub">
+          星环OPC中心将私有化部署的AI平台（OpenClaw）与公司全生命周期业务深度融合，
+          让一个人具备经营完整公司的能力。
+        </p>
+        <div class="hero-actions">
+          <a href="#plugin" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            了解产品
+          </a>
+          <a href="#cta" class="btn btn-secondary">联系我们</a>
+        </div>
+      </div>
 
-        <!-- Left -->
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-num">14</div>
+          <div class="stat-label">AI 业务工具</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">100%</div>
+          <div class="stat-label">本地私有化部署</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">1→N</div>
+          <div class="stat-label">一人管理多公司</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">全栈</div>
+          <div class="stat-label">公司全生命周期</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PLUGIN INTRO ── -->
+  <section id="plugin" class="section">
+    <div class="container">
+      <div class="plugin-grid">
         <div>
-          <!-- Plugin badge -->
-          <div class="plugin-badge inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-6">
-            <svg class="w-4 h-4 text-green flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
-            </svg>
-            <span class="text-green text-xs font-semibold">OpenClaw 插件 · galaxy-opc-plugin</span>
-          </div>
-
-          <h1 id="hero-h1" class="text-4xl sm:text-5xl lg:text-[3.25rem] font-bold text-tx leading-tight mb-5">
-            让每个个体<br/>
-            <span class="text-brand">拥有大企业</span><br/>
-            的运营能力
-          </h1>
-          <p class="text-tx2 text-lg leading-relaxed mb-8 max-w-lg">
-            星环OPC中心是基于 <strong class="text-green font-semibold">OpenClaw AI 平台</strong>的一站式一人公司孵化与赋能插件。物理空间 + AI员工系统 + 资金赋能三位一体，帮助创业者以极低成本启动和运营公司。
+          <span class="badge badge-accent" style="margin-bottom:16px">技术基础</span>
+          <h2 class="display-lg" style="margin-bottom:20px">
+            OpenClaw × Galaxy OPC<br/>
+            <span class="accent">私有 AI 员工系统</span>
+          </h2>
+          <p class="body-lg muted" style="margin-bottom:24px">
+            OpenClaw 是本地私有化部署的 AI 对话与 Agent 平台，类似 ChatGPT 但完全运行在你自己的服务器上。
+            星环通过 <strong style="color:var(--tx)">galaxy-opc-plugin</strong> 插件，将14套业务 AI 工具无缝嵌入 OpenClaw，
+            无需改动任何核心代码。
           </p>
-          <div class="flex flex-wrap gap-3 mb-12">
-            <a href="#plugin" class="bg-green hover:bg-greenhover text-white font-semibold px-6 py-3 rounded-xl transition-colors duration-200 cursor-pointer flex items-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-              了解插件
-            </a>
-            <a href="#contact" class="bg-white border border-bd hover:border-green hover:bg-greenlight text-tx font-semibold px-6 py-3 rounded-xl transition-colors duration-200 cursor-pointer">
-              联系合作
-            </a>
+          <div class="code-block">
+            <div><span class="cmt"># 一键安装 galaxy-opc</span></div>
+            <div><span class="cmd">npx</span> <span class="str">galaxy-opc</span></div>
+            <div style="margin-top:10px"><span class="cmt"># 插件 npm 包</span></div>
+            <div><span class="str">galaxy-opc-plugin</span></div>
+            <div style="margin-top:10px"><span class="cmt"># 管理后台</span></div>
+            <div><span class="cmd">http://localhost:18789</span><span class="str">/opc/admin</span></div>
           </div>
-
-          <!-- Stats -->
-          <div class="grid grid-cols-3 gap-4 pt-8 border-t border-greenborder">
-            <div>
-              <div class="text-3xl font-bold stat-num">100+</div>
-              <div class="text-tx3 text-xs mt-1">首年孵化一人公司</div>
-            </div>
-            <div>
-              <div class="text-3xl font-bold stat-num">500万</div>
-              <div class="text-tx3 text-xs mt-1">首期投入规模</div>
-            </div>
-            <div>
-              <div class="text-3xl font-bold stat-num">5000万+</div>
-              <div class="text-tx3 text-xs mt-1">年助城投科创贷</div>
-            </div>
+          <div class="tool-chips">
+            <span class="tool-chip">公司注册</span>
+            <span class="tool-chip">财务管理</span>
+            <span class="tool-chip">法务合规</span>
+            <span class="tool-chip">HR 人事</span>
+            <span class="tool-chip">项目管理</span>
+            <span class="tool-chip">媒体运营</span>
+            <span class="tool-chip">采购管理</span>
+            <span class="tool-chip">投资管理</span>
+            <span class="tool-chip">客户获取</span>
+            <span class="tool-chip">资产包</span>
+            <span class="tool-chip">生命周期</span>
+            <span class="tool-chip">监控预警</span>
           </div>
         </div>
-
-        <!-- Right: Plugin card -->
-        <div class="hidden lg:block">
-          <div class="bg-white border border-bd rounded-2xl shadow-lg overflow-hidden">
-            <!-- Card header -->
-            <div class="bg-greenlight border-b border-greenborder px-6 py-4 flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-green rounded-lg flex items-center justify-center">
-                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
-                  </svg>
-                </div>
-                <div>
-                  <div class="font-bold text-tx text-sm">galaxy-opc-plugin</div>
-                  <div class="text-tx3 text-xs">OpenClaw Plugin · v0.1.1</div>
-                </div>
-              </div>
-              <span class="bg-green/10 text-green text-xs font-semibold px-2.5 py-1 rounded-full border border-green/20">已安装</span>
-            </div>
-
-            <!-- Install command -->
-            <div class="px-6 pt-5 pb-4">
-              <div class="text-xs font-semibold text-tx3 uppercase tracking-wide mb-2">安装命令</div>
-              <div class="code-block px-4 py-3 text-sm select-all cursor-text">
-                <span class="text-tx3">$</span> <span class="kw">npx</span> <span class="str">galaxy-opc</span>
-              </div>
-            </div>
-
-            <!-- AI tools list -->
-            <div class="px-6 pb-4">
-              <div class="text-xs font-semibold text-tx3 uppercase tracking-wide mb-3">已注册 AI 工具 <span class="text-green font-bold">14</span> 个</div>
-              <div class="grid grid-cols-2 gap-2">
-                <div class="flex items-center gap-2 bg-greenlight rounded-lg px-3 py-2 border border-greenborder">
-                  <div class="w-1.5 h-1.5 rounded-full bg-green flex-shrink-0"></div>
-                  <span class="text-xs text-tx2 font-medium">opc_finance</span>
-                </div>
-                <div class="flex items-center gap-2 bg-greenlight rounded-lg px-3 py-2 border border-greenborder">
-                  <div class="w-1.5 h-1.5 rounded-full bg-green flex-shrink-0"></div>
-                  <span class="text-xs text-tx2 font-medium">opc_legal</span>
-                </div>
-                <div class="flex items-center gap-2 bg-greenlight rounded-lg px-3 py-2 border border-greenborder">
-                  <div class="w-1.5 h-1.5 rounded-full bg-green flex-shrink-0"></div>
-                  <span class="text-xs text-tx2 font-medium">opc_hr</span>
-                </div>
-                <div class="flex items-center gap-2 bg-greenlight rounded-lg px-3 py-2 border border-greenborder">
-                  <div class="w-1.5 h-1.5 rounded-full bg-green flex-shrink-0"></div>
-                  <span class="text-xs text-tx2 font-medium">opc_project</span>
-                </div>
-                <div class="flex items-center gap-2 bg-greenlight rounded-lg px-3 py-2 border border-greenborder">
-                  <div class="w-1.5 h-1.5 rounded-full bg-green flex-shrink-0"></div>
-                  <span class="text-xs text-tx2 font-medium">opc_investment</span>
-                </div>
-                <div class="flex items-center gap-2 bg-orange-50 rounded-lg px-3 py-2 border border-orange-100">
-                  <div class="w-1.5 h-1.5 rounded-full bg-brand flex-shrink-0"></div>
-                  <span class="text-xs text-tx2 font-medium">opc_acquisition</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="bg-gray-50 border-t border-bd px-6 py-3 flex items-center justify-between">
-              <span class="text-xs text-tx3">OpenClaw 运行中</span>
-              <span class="text-xs text-green font-medium">http://localhost:18789/opc/admin</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════ PLUGIN INTRO -->
-  <section id="plugin" class="py-20 px-4 sm:px-6 lg:px-8 bg-white" aria-labelledby="plugin-h2">
-    <div class="max-w-7xl mx-auto">
-      <div class="max-w-2xl mb-14">
-        <div class="accent-bar mb-4"></div>
-        <h2 id="plugin-h2" class="text-3xl sm:text-4xl font-bold text-tx mb-4">什么是 galaxy-opc-plugin？</h2>
-        <p class="text-tx2 text-lg leading-relaxed">galaxy-opc-plugin 是运行在 <strong class="text-green">OpenClaw</strong> AI 平台上的官方插件，无需修改任何核心代码，通过插件 API 为 AI 对话系统注入完整的一人公司运营能力。</p>
-      </div>
-
-      <!-- OpenClaw explanation -->
-      <div class="grid lg:grid-cols-2 gap-8 mb-12">
-        <!-- What is OpenClaw -->
-        <div class="bg-greenlight border border-greenborder rounded-2xl p-7">
-          <div class="flex items-start gap-4 mb-5">
-            <div class="w-12 h-12 bg-green rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-              </svg>
-            </div>
-            <div>
-              <h3 class="text-lg font-bold text-tx mb-1">OpenClaw 是什么？</h3>
-              <p class="text-tx2 text-sm leading-relaxed">OpenClaw 是一个本地私有部署的 AI 助理平台，提供对话界面、工具调用、Skills、插件体系等能力。类似于带有完整 Agent 能力的私有 ChatGPT，数据完全本地化，不上传云端。</p>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="bg-white rounded-xl p-3 border border-greenborder">
-              <div class="text-xs font-semibold text-green mb-1">本地私有部署</div>
-              <div class="text-tx3 text-xs">数据不离开本地，业务数据安全可控</div>
-            </div>
-            <div class="bg-white rounded-xl p-3 border border-greenborder">
-              <div class="text-xs font-semibold text-green mb-1">插件生态</div>
-              <div class="text-tx3 text-xs">通过插件扩展 AI 的业务工具能力</div>
-            </div>
-            <div class="bg-white rounded-xl p-3 border border-greenborder">
-              <div class="text-xs font-semibold text-green mb-1">多模型支持</div>
-              <div class="text-tx3 text-xs">通义千问、MiniMax、GPT-4 等均可接入</div>
-            </div>
-            <div class="bg-white rounded-xl p-3 border border-greenborder">
-              <div class="text-xs font-semibold text-green mb-1">对话即操作</div>
-              <div class="text-tx3 text-xs">用自然语言驱动财务、法务、HR等业务</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Plugin architecture -->
-        <div class="bg-bg border border-bd rounded-2xl p-7">
-          <h3 class="text-lg font-bold text-tx mb-5">galaxy-opc-plugin 做了什么？</h3>
-          <div class="space-y-4">
-            <div class="flex items-start gap-3">
-              <div class="w-7 h-7 rounded-lg bg-green/10 border border-greenborder flex items-center justify-center flex-shrink-0 mt-0.5 text-green font-bold text-xs">1</div>
-              <div>
-                <div class="font-semibold text-tx text-sm mb-0.5">注册 14 个业务工具</div>
-                <div class="text-tx2 text-xs leading-relaxed">财务、法务、HR、项目管理、投资、采购、生命周期、监控、客户获取、资产包、媒体、员工等全套 AI 工具，AI 可直接调用操作 SQLite 数据库。</div>
-              </div>
-            </div>
-            <div class="flex items-start gap-3">
-              <div class="w-7 h-7 rounded-lg bg-green/10 border border-greenborder flex items-center justify-center flex-shrink-0 mt-0.5 text-green font-bold text-xs">2</div>
-              <div>
-                <div class="font-semibold text-tx text-sm mb-0.5">注入上下文感知</div>
-                <div class="text-tx2 text-xs leading-relaxed">每次对话自动注入当前公司运营数据、待办提醒、财务概览，让 AI 始终了解业务状态，给出针对性建议。</div>
-              </div>
-            </div>
-            <div class="flex items-start gap-3">
-              <div class="w-7 h-7 rounded-lg bg-green/10 border border-greenborder flex items-center justify-center flex-shrink-0 mt-0.5 text-green font-bold text-xs">3</div>
-              <div>
-                <div class="font-semibold text-tx text-sm mb-0.5">提供 Web 管理后台</div>
-                <div class="text-tx2 text-xs leading-relaxed">内置管理界面 <span class="font-mono text-green text-xs bg-greenlight px-1.5 py-0.5 rounded">/opc/admin</span>，可视化管理公司数据、AI 工具开关、OPB手册、提醒服务等。</div>
-              </div>
-            </div>
-            <div class="flex items-start gap-3">
-              <div class="w-7 h-7 rounded-lg bg-brand/10 border border-orange-200 flex items-center justify-center flex-shrink-0 mt-0.5 text-brand font-bold text-xs">4</div>
-              <div>
-                <div class="font-semibold text-tx text-sm mb-0.5">自动提醒服务</div>
-                <div class="text-tx2 text-xs leading-relaxed">后台定时扫描税务申报、合同到期、任务截止等关键节点，通过 Webhook 主动推送提醒，不遗漏重要事项。</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Install flow -->
-      <div class="bg-tx rounded-2xl p-8">
-        <h3 class="text-white text-lg font-bold mb-6">三步安装，一行命令启动</h3>
-        <div class="grid md:grid-cols-3 gap-4">
-          <div class="bg-white/5 border border-white/10 rounded-xl p-5">
-            <div class="text-green text-xs font-bold uppercase tracking-wide mb-3">Step 1 · 运行安装向导</div>
-            <div class="code-block px-4 py-3 mb-3">
-              <div><span class="text-gray-500">$</span> <span class="kw">npx</span> <span class="str">galaxy-opc</span></div>
-            </div>
-            <div class="text-gray-400 text-xs leading-relaxed">自动安装 OpenClaw + galaxy-opc-plugin，向导式配置 AI 模型（支持通义千问、MiniMax 等国产模型 OAuth 扫码登录）</div>
-          </div>
-          <div class="bg-white/5 border border-white/10 rounded-xl p-5">
-            <div class="text-green text-xs font-bold uppercase tracking-wide mb-3">Step 2 · 启动平台</div>
-            <div class="code-block px-4 py-3 mb-3">
-              <div><span class="text-gray-500">$</span> <span class="kw">openclaw</span> <span class="str">gateway</span></div>
-            </div>
-            <div class="text-gray-400 text-xs leading-relaxed">启动本地 AI 网关，插件自动加载，14 个 OPC 工具注册完毕，对话界面和管理后台同步就绪</div>
-          </div>
-          <div class="bg-white/5 border border-white/10 rounded-xl p-5">
-            <div class="text-brand text-xs font-bold uppercase tracking-wide mb-3">Step 3 · 开始使用</div>
-            <div class="code-block px-4 py-3 mb-3">
-              <div><span class="cm"># 对话界面</span></div>
-              <div><span class="str">localhost:18789</span></div>
-              <div class="mt-1"><span class="cm"># 管理后台</span></div>
-              <div><span class="str">localhost:18789/opc/admin</span></div>
-            </div>
-            <div class="text-gray-400 text-xs leading-relaxed">用自然语言管理公司：「帮我记一笔今天的收入」「检查一下本月的合同到期情况」</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════ SOLUTION -->
-  <section id="solution" class="py-20 px-4 sm:px-6 lg:px-8 bg-bg" aria-labelledby="solution-h2">
-    <div class="max-w-7xl mx-auto">
-      <div class="max-w-2xl mb-14">
-        <div class="accent-bar mb-4"></div>
-        <h2 id="solution-h2" class="text-3xl sm:text-4xl font-bold text-tx mb-4">三位一体赋能体系</h2>
-        <p class="text-tx2 text-lg leading-relaxed">物理孵化空间 + Galaxy OPC 插件 + 资金赋能，让每个创业者以大企业标准运营一人公司。</p>
-      </div>
-
-      <div class="grid lg:grid-cols-3 gap-6 mb-10">
-        <!-- Space -->
-        <div class="bg-white border border-bd rounded-2xl p-7 card-lift cursor-pointer">
-          <div class="w-12 h-12 rounded-xl bg-greenlight border border-greenborder flex items-center justify-center mb-5">
-            <svg class="w-6 h-6 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-            </svg>
-          </div>
-          <h3 class="text-lg font-bold text-tx mb-2">物理孵化空间</h3>
-          <p class="text-tx2 text-sm leading-relaxed mb-4">500-1000㎡共享办公，含独立会议室、路演厅、24小时无人超市、潮酒馆、健身房等青年社交配套，让创业者扎根本地。</p>
-          <ul class="space-y-1.5 text-sm text-tx2">
-            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>共享工位 · 独立会议室 · 路演厅</li>
-            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>24h 无人超市 · 健身房</li>
-            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-green flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>青年创业社群与人脉网络</li>
-          </ul>
-        </div>
-
-        <!-- Plugin — highlighted -->
-        <div class="bg-green rounded-2xl p-7 card-lift cursor-pointer relative overflow-hidden">
-          <div class="absolute top-0 right-0 w-28 h-28 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" aria-hidden="true"></div>
-          <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-5">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
-            </svg>
-          </div>
-          <div class="text-white/70 text-xs font-semibold uppercase tracking-wide mb-1">核心数字产品</div>
-          <h3 class="text-lg font-bold text-white mb-2">Galaxy OPC 插件</h3>
-          <p class="text-white/70 text-sm leading-relaxed mb-4">基于 OpenClaw 的 AI 员工系统，14个业务工具覆盖公司运营全场景。用对话驱动财务、法务、HR等，让创业者专注业务本身。</p>
-          <ul class="space-y-1.5 text-sm text-white/80">
-            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-white/90 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>一键完成工商注册、银行开户</li>
-            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-white/90 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>自然语言操作所有业务模块</li>
-            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-white/90 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>数据本地化，完全私有部署</li>
-          </ul>
-        </div>
-
-        <!-- Capital -->
-        <div class="bg-white border border-bd rounded-2xl p-7 card-lift cursor-pointer">
-          <div class="w-12 h-12 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center mb-5">
-            <svg class="w-6 h-6 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <h3 class="text-lg font-bold text-tx mb-2">资金赋能</h3>
-          <p class="text-tx2 text-sm leading-relaxed mb-4">以参股形式投资有潜力的创业者，提供5-50万元种子资金，对接人脉、金融机构和持续融资支持。</p>
-          <ul class="space-y-1.5 text-sm text-tx2">
-            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-brand flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>5-50万元/人种子投资</li>
-            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-brand flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>人脉与产业资源对接</li>
-            <li class="flex items-center gap-2"><svg class="w-4 h-4 text-brand flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>持续融资与退出支持</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- AI tools grid -->
-      <div class="bg-white border border-bd rounded-2xl p-8">
-        <h3 class="text-lg font-bold text-tx mb-1">Galaxy OPC 插件内置 14 个 AI 工具</h3>
-        <p class="text-tx2 text-sm mb-6">覆盖一人公司运营全生命周期，每个工具可单独开关</p>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
-          <div class="bg-greenlight border border-greenborder rounded-xl p-3 text-center">
-            <div class="text-green font-bold text-xs mb-0.5">财务</div>
-            <div class="text-tx3 text-xs">Finance</div>
-          </div>
-          <div class="bg-greenlight border border-greenborder rounded-xl p-3 text-center">
-            <div class="text-green font-bold text-xs mb-0.5">法务</div>
-            <div class="text-tx3 text-xs">Legal</div>
-          </div>
-          <div class="bg-greenlight border border-greenborder rounded-xl p-3 text-center">
-            <div class="text-green font-bold text-xs mb-0.5">人事</div>
-            <div class="text-tx3 text-xs">HR</div>
-          </div>
-          <div class="bg-greenlight border border-greenborder rounded-xl p-3 text-center">
-            <div class="text-green font-bold text-xs mb-0.5">媒体</div>
-            <div class="text-tx3 text-xs">Media</div>
-          </div>
-          <div class="bg-greenlight border border-greenborder rounded-xl p-3 text-center">
-            <div class="text-green font-bold text-xs mb-0.5">项目</div>
-            <div class="text-tx3 text-xs">Project</div>
-          </div>
-          <div class="bg-greenlight border border-greenborder rounded-xl p-3 text-center">
-            <div class="text-green font-bold text-xs mb-0.5">投资</div>
-            <div class="text-tx3 text-xs">Investment</div>
-          </div>
-          <div class="bg-greenlight border border-greenborder rounded-xl p-3 text-center">
-            <div class="text-green font-bold text-xs mb-0.5">采购</div>
-            <div class="text-tx3 text-xs">Procurement</div>
-          </div>
-          <div class="bg-greenlight border border-greenborder rounded-xl p-3 text-center">
-            <div class="text-green font-bold text-xs mb-0.5">生命周期</div>
-            <div class="text-tx3 text-xs">Lifecycle</div>
-          </div>
-          <div class="bg-greenlight border border-greenborder rounded-xl p-3 text-center">
-            <div class="text-green font-bold text-xs mb-0.5">监控</div>
-            <div class="text-tx3 text-xs">Monitoring</div>
-          </div>
-          <div class="bg-orange-50 border border-orange-100 rounded-xl p-3 text-center">
-            <div class="text-brand font-bold text-xs mb-0.5">客户获取</div>
-            <div class="text-tx3 text-xs">Acquisition</div>
-          </div>
-          <div class="bg-orange-50 border border-orange-100 rounded-xl p-3 text-center">
-            <div class="text-brand font-bold text-xs mb-0.5">资产包</div>
-            <div class="text-tx3 text-xs">Asset Pkg</div>
-          </div>
-          <div class="bg-greenlight border border-greenborder rounded-xl p-3 text-center">
-            <div class="text-green font-bold text-xs mb-0.5">公司</div>
-            <div class="text-tx3 text-xs">OPC Core</div>
-          </div>
-          <div class="bg-greenlight border border-greenborder rounded-xl p-3 text-center">
-            <div class="text-green font-bold text-xs mb-0.5">员工</div>
-            <div class="text-tx3 text-xs">Staff</div>
-          </div>
-          <div class="bg-greenlight border border-greenborder rounded-xl p-3 text-center">
-            <div class="text-green font-bold text-xs mb-0.5">OPB手册</div>
-            <div class="text-tx3 text-xs">OPB</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════ BUSINESS MODEL -->
-  <section id="model" class="py-20 px-4 sm:px-6 lg:px-8 bg-white" aria-labelledby="model-h2">
-    <div class="max-w-7xl mx-auto">
-      <div class="max-w-2xl mb-14">
-        <div class="accent-bar mb-4"></div>
-        <h2 id="model-h2" class="text-3xl sm:text-4xl font-bold text-tx mb-4">投资—服务—退出闭环</h2>
-        <p class="text-tx2 text-lg leading-relaxed">创新的资金闭环模式，确保多方共赢、风险可控。</p>
-      </div>
-
-      <!-- Flow -->
-      <div class="bg-bg border border-bd rounded-2xl p-8 mb-8">
-        <div class="flex flex-col md:flex-row items-center justify-center gap-2">
-          <div class="bg-tx text-white rounded-2xl px-6 py-5 text-center min-w-[140px]">
-            <div class="text-brand text-2xl font-bold">①</div>
-            <div class="font-bold text-sm mt-1">星河数科</div>
-            <div class="text-white/50 text-xs mt-0.5">投资参股</div>
-          </div>
-          <svg class="w-6 h-6 text-green rotate-90 md:rotate-0 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-          <div class="bg-green text-white rounded-2xl px-6 py-5 text-center min-w-[140px]">
-            <div class="text-white text-2xl font-bold">②</div>
-            <div class="font-bold text-sm mt-1">一人公司</div>
-            <div class="text-white/70 text-xs mt-0.5">使用 OPC 插件 · 反向采购服务</div>
-          </div>
-          <svg class="w-6 h-6 text-green rotate-90 md:rotate-0 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
-          <div class="bg-brand text-white rounded-2xl px-6 py-5 text-center min-w-[140px]">
-            <div class="text-white text-2xl font-bold">③</div>
-            <div class="font-bold text-sm mt-1">城投公司</div>
-            <div class="text-white/80 text-xs mt-0.5">科创资产 · 低息科创贷</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid md:grid-cols-2 gap-6">
-        <div class="bg-bg border border-bd rounded-2xl p-6 card-lift cursor-pointer">
-          <div class="flex items-start gap-4">
-            <div class="w-10 h-10 rounded-xl bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-            </div>
-            <div>
-              <h4 class="font-bold text-tx mb-2">投资参股 + 服务费回流</h4>
-              <p class="text-tx2 text-sm leading-relaxed">以参股形式投资创业者，一人公司反向采购 Galaxy OPC 插件系统服务、财务、法务等服务，投入资金以服务费形式逐步回流，形成稳定现金流。</p>
-            </div>
-          </div>
-        </div>
-        <div class="bg-bg border border-bd rounded-2xl p-6 card-lift cursor-pointer">
-          <div class="flex items-start gap-4">
-            <div class="w-10 h-10 rounded-xl bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            </div>
-            <div>
-              <h4 class="font-bold text-tx mb-2">亏损对冲：税务优化</h4>
-              <p class="text-tx2 text-sm leading-relaxed">若一人公司经营不善，按协议收并购。亏损抵扣星河科技应纳税所得额，实现税务优化，降低整体税负，化风险为资产。</p>
-            </div>
-          </div>
-        </div>
-        <div class="bg-bg border border-bd rounded-2xl p-6 card-lift cursor-pointer">
-          <div class="flex items-start gap-4">
-            <div class="w-10 h-10 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-            </div>
-            <div>
-              <h4 class="font-bold text-tx mb-2">科创资产包转让城投</h4>
-              <p class="text-tx2 text-sm leading-relaxed">整合亏损公司形成具有真实运营数据和科创属性的"资产包"，转让给城投公司，助力其获取低息科创贷，收取融资服务费。</p>
-            </div>
-          </div>
-        </div>
-        <div class="bg-bg border border-bd rounded-2xl p-6 card-lift cursor-pointer">
-          <div class="flex items-start gap-4">
-            <div class="w-10 h-10 rounded-xl bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
-            </div>
-            <div>
-              <h4 class="font-bold text-tx mb-2">赋能城投产业化转型</h4>
-              <p class="text-tx2 text-sm leading-relaxed">为城投公司提供科创资产 + 低成本融资渠道 + 数字人才储备，助力产业化转型，预计每年助力获取科创贷 5000 万元以上。</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════ AUDIENCE -->
-  <section id="audience" class="py-20 px-4 sm:px-6 lg:px-8 bg-bg" aria-labelledby="audience-h2">
-    <div class="max-w-7xl mx-auto">
-      <div class="max-w-2xl mb-12">
-        <div class="accent-bar mb-4"></div>
-        <h2 id="audience-h2" class="text-3xl sm:text-4xl font-bold text-tx mb-4">我们服务的五类伙伴</h2>
-        <p class="text-tx2 text-lg">不同角色，不同价值，同一个生态。</p>
-      </div>
-
-      <div class="flex flex-wrap gap-2 mb-6" role="tablist" aria-label="合作对象">
-        <button class="audience-tab tab-active px-4 py-2 rounded-xl text-sm font-semibold border cursor-pointer transition-all duration-200" data-tab="en" role="tab" aria-selected="true">个人创业者</button>
-        <button class="audience-tab bg-white border border-bd text-tx2 hover:border-green hover:text-green px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200" data-tab="gov" role="tab" aria-selected="false">政府决策者</button>
-        <button class="audience-tab bg-white border border-bd text-tx2 hover:border-green hover:text-green px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200" data-tab="corp" role="tab" aria-selected="false">产业收购方</button>
-        <button class="audience-tab bg-white border border-bd text-tx2 hover:border-green hover:text-green px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200" data-tab="inv" role="tab" aria-selected="false">投资人</button>
-        <button class="audience-tab bg-white border border-bd text-tx2 hover:border-green hover:text-green px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200" data-tab="fran" role="tab" aria-selected="false">运营加盟商</button>
-      </div>
-
-      <div class="bg-white border border-bd rounded-2xl overflow-hidden">
-
-        <!-- 1 Entrepreneur -->
-        <div id="panel-en" class="audience-panel active p-8" role="tabpanel">
-          <div class="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <div class="inline-flex items-center gap-2 bg-greenlight border border-greenborder rounded-full px-3 py-1 mb-4">
-                <svg class="w-4 h-4 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                <span class="text-green text-xs font-semibold">个人创业者 · 返乡人才 · 应届毕业生</span>
-              </div>
-              <h3 class="text-2xl font-bold text-tx mb-3">你只需专注最重要的事</h3>
-              <p class="text-tx2 leading-relaxed mb-5">获得 Galaxy OPC 插件系统，用 AI 对话方式处理公司所有运营杂务。财务报税、合同审核、招聘管理、项目跟进——全部用自然语言搞定，你的时间全部投入业务本身。</p>
-              <div class="space-y-3">
-                <div class="flex items-start gap-3">
-                  <div class="w-5 h-5 rounded-full bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-3 h-3 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div>
-                  <div><div class="font-semibold text-tx text-sm">零门槛启动</div><div class="text-tx2 text-sm">5-50万种子资金 + Galaxy OPC 插件免费使用</div></div>
-                </div>
-                <div class="flex items-start gap-3">
-                  <div class="w-5 h-5 rounded-full bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-3 h-3 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div>
-                  <div><div class="font-semibold text-tx text-sm">AI 全岗位覆盖</div><div class="text-tx2 text-sm">对话即可完成报税、合同审查、薪资核算</div></div>
-                </div>
-                <div class="flex items-start gap-3">
-                  <div class="w-5 h-5 rounded-full bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-3 h-3 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div>
-                  <div><div class="font-semibold text-tx text-sm">本地私有，数据安全</div><div class="text-tx2 text-sm">OpenClaw 本地部署，公司数据绝不上传第三方</div></div>
-                </div>
-              </div>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div class="bg-greenlight border border-greenborder rounded-xl p-5 text-center"><div class="text-3xl font-bold stat-num">5-50万</div><div class="text-tx3 text-xs mt-1">种子投资</div></div>
-              <div class="bg-greenlight border border-greenborder rounded-xl p-5 text-center"><div class="text-3xl font-bold stat-num">14个</div><div class="text-tx3 text-xs mt-1">AI工具</div></div>
-              <div class="bg-greenlight border border-greenborder rounded-xl p-5 text-center"><div class="text-3xl font-bold stat-num">1行</div><div class="text-tx3 text-xs mt-1">命令安装</div></div>
-              <div class="bg-greenlight border border-greenborder rounded-xl p-5 text-center"><div class="text-3xl font-bold stat-num">0负担</div><div class="text-tx3 text-xs mt-1">行政运营</div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2 Government -->
-        <div id="panel-gov" class="audience-panel p-8" role="tabpanel">
-          <div class="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <div class="inline-flex items-center gap-2 bg-greenlight border border-greenborder rounded-full px-3 py-1 mb-4">
-                <svg class="w-4 h-4 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
-                <span class="text-green text-xs font-semibold">政府 · 城投 · 管委会</span>
-              </div>
-              <h3 class="text-2xl font-bold text-tx mb-3">财政零负担，多重社会效益</h3>
-              <p class="text-tx2 leading-relaxed mb-5">我们不要财政补贴，只需政府提供闲置场地和审批绿色通道。引进 OPC 中心，即可同步撬动就业岗位、人才回流、数字经济新业态、城投科创融资四重效益。</p>
-              <div class="space-y-3">
-                <div class="flex items-start gap-3"><div class="w-5 h-5 rounded-full bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-3 h-3 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div><div class="font-semibold text-tx text-sm">财政零负担</div><div class="text-tx2 text-sm">星河数科全额自筹500万，仅需场地支持</div></div></div>
-                <div class="flex items-start gap-3"><div class="w-5 h-5 rounded-full bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-3 h-3 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div><div class="font-semibold text-tx text-sm">首年100+就业岗位</div><div class="text-tx2 text-sm">孵化企业年产值预计2000万元以上</div></div></div>
-                <div class="flex items-start gap-3"><div class="w-5 h-5 rounded-full bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-3 h-3 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div><div class="font-semibold text-tx text-sm">城投融资赋能</div><div class="text-tx2 text-sm">年助力城投获取5000万+低息科创贷</div></div></div>
-              </div>
-            </div>
-            <div class="space-y-3">
-              <div class="bg-bg rounded-xl p-4 border border-bd"><div class="text-xs font-semibold text-green mb-2">政府仅需提供</div><div class="flex items-start gap-3"><svg class="w-4 h-4 text-tx3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg><div class="text-tx2 text-sm">500-1000㎡闲置办公楼或厂房，优先靠近年轻人聚集地</div></div></div>
-              <div class="bg-bg rounded-xl p-4 border border-bd"><div class="text-xs font-semibold text-green mb-2">绿色通道支持</div><div class="flex items-start gap-3"><svg class="w-4 h-4 text-tx3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><div class="text-tx2 text-sm">工商注册、税务办理、科创企业认定一站式服务</div></div></div>
-              <div class="bg-greenlight rounded-xl p-4 border border-greenborder"><div class="text-xs font-semibold text-green mb-1">深度契合国家政策</div><div class="text-tx2 text-xs">乡村振兴 · AI+行动 · 大学生就业创业扶持 · 城投转型</div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3 Corporate -->
-        <div id="panel-corp" class="audience-panel p-8" role="tabpanel">
-          <div class="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <div class="inline-flex items-center gap-2 bg-orange-50 border border-orange-100 rounded-full px-3 py-1 mb-4">
-                <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
-                <span class="text-brand text-xs font-semibold">城投 · 上市公司 · 大型民企</span>
-              </div>
-              <h3 class="text-2xl font-bold text-tx mb-3">低成本获取科创资产与融资能力</h3>
-              <p class="text-tx2 leading-relaxed mb-5">OPC中心为城投公司和产业资本提供具有真实运营数据的科创资产包，作为申请政策性低息科创贷的核心抓手，同时间接储备数字经济转型人才。</p>
-              <div class="space-y-3">
-                <div class="flex items-start gap-3"><div class="w-5 h-5 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-3 h-3 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div><div class="font-semibold text-tx text-sm">真实科创资产</div><div class="text-tx2 text-sm">具有完整业务流水和科创属性的企业资产组合</div></div></div>
-                <div class="flex items-start gap-3"><div class="w-5 h-5 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-3 h-3 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div><div class="font-semibold text-tx text-sm">低息科创贷通道</div><div class="text-tx2 text-sm">政府背书的政策性低利率融资，年规模5000万+</div></div></div>
-                <div class="flex items-start gap-3"><div class="w-5 h-5 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-3 h-3 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div><div class="font-semibold text-tx text-sm">数字人才储备库</div><div class="text-tx2 text-sm">间接储备AI时代产业转型所需数字经济人才</div></div></div>
-              </div>
-            </div>
-            <div class="space-y-3">
-              <div class="bg-orange-50 border border-orange-100 rounded-xl p-5 text-center"><div class="text-3xl font-bold text-brand">5000万+</div><div class="text-tx3 text-xs mt-1">预计年助力科创贷规模</div></div>
-              <div class="bg-bg rounded-xl p-4 border border-bd flex items-center gap-4"><div class="text-2xl font-bold stat-num flex-shrink-0">真实</div><div class="text-tx2 text-sm">具有完整业务流水 + 科创认定的企业资产包</div></div>
-              <div class="bg-bg rounded-xl p-4 border border-bd flex items-center gap-4"><div class="text-2xl font-bold stat-num flex-shrink-0">低息</div><div class="text-tx2 text-sm">政策优惠科创贷，优于普通商业贷款利率</div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 4 Investor -->
-        <div id="panel-inv" class="audience-panel p-8" role="tabpanel">
-          <div class="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <div class="inline-flex items-center gap-2 bg-greenlight border border-greenborder rounded-full px-3 py-1 mb-4">
-                <svg class="w-4 h-4 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span class="text-green text-xs font-semibold">星环领投 · 个人投资者 · 机构</span>
-              </div>
-              <h3 class="text-2xl font-bold text-tx mb-3">多重安全垫的分散化投资组合</h3>
-              <p class="text-tx2 leading-relaxed mb-5">OPC不是单一项目押注，而是100+一人公司构成的分散投资组合。服务费回流、亏损抵税、资产包城投退出三重机制，叠加乡村振兴、AI+等政策红利。</p>
-              <div class="space-y-3">
-                <div class="flex items-start gap-3"><div class="w-5 h-5 rounded-full bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-3 h-3 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div><div class="font-semibold text-tx text-sm">分散化风险</div><div class="text-tx2 text-sm">100+公司组合，单项目损失在整体可控范围</div></div></div>
-                <div class="flex items-start gap-3"><div class="w-5 h-5 rounded-full bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-3 h-3 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div><div class="font-semibold text-tx text-sm">三重退出通道</div><div class="text-tx2 text-sm">服务费回流 + 亏损抵税 + 城投资产包退出</div></div></div>
-                <div class="flex items-start gap-3"><div class="w-5 h-5 rounded-full bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-3 h-3 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div><div class="font-semibold text-tx text-sm">政策红利加持</div><div class="text-tx2 text-sm">深度绑定乡村振兴、AI+行动、科创扶持政策</div></div></div>
-              </div>
-            </div>
-            <div class="space-y-3">
-              <div class="bg-bg rounded-xl p-4 border border-bd"><div class="flex justify-between items-center mb-1"><span class="text-sm font-bold text-tx">星环（战略领投）</span><span class="text-xs text-green font-semibold bg-greenlight px-2 py-0.5 rounded-full border border-greenborder">主导</span></div><div class="text-tx2 text-xs">负责平台战略与资源整合，享受最优先退出权</div></div>
-              <div class="bg-bg rounded-xl p-4 border border-bd"><div class="flex justify-between items-center mb-1"><span class="text-sm font-bold text-tx">个人投资者</span><span class="text-xs text-brand font-semibold bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100">跟投</span></div><div class="text-tx2 text-xs">按比例参投孵化基金，分享组合收益</div></div>
-              <div class="bg-bg rounded-xl p-4 border border-bd"><div class="flex justify-between items-center mb-1"><span class="text-sm font-bold text-tx">机构投资人</span><span class="text-xs text-tx2 font-semibold bg-gray-100 px-2 py-0.5 rounded-full">战略</span></div><div class="text-tx2 text-xs">大额参投，享受融资服务费分成及科创贷收益</div></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 5 Franchise -->
-        <div id="panel-fran" class="audience-panel p-8" role="tabpanel">
-          <div class="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <div class="inline-flex items-center gap-2 bg-greenlight border border-greenborder rounded-full px-3 py-1 mb-4">
-                <svg class="w-4 h-4 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span class="text-green text-xs font-semibold">洛阳OPC · 盐城OPC · 全国扩张</span>
-              </div>
-              <h3 class="text-2xl font-bold text-tx mb-3">复制成熟模型，快速落地本地</h3>
-              <p class="text-tx2 leading-relaxed mb-5">OPC中心采用标准化模型，加盟商获得 Galaxy OPC 插件授权、品牌支持、招募培训和总部资源对接，快速在本地城市复制 OPC 孵化中心。</p>
-              <div class="space-y-3">
-                <div class="flex items-start gap-3"><div class="w-5 h-5 rounded-full bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-3 h-3 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div><div class="font-semibold text-tx text-sm">Galaxy OPC 插件授权</div><div class="text-tx2 text-sm">获得完整的 OpenClaw 插件部署与运营权限</div></div></div>
-                <div class="flex items-start gap-3"><div class="w-5 h-5 rounded-full bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-3 h-3 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div><div class="font-semibold text-tx text-sm">品牌 + 总部全程支持</div><div class="text-tx2 text-sm">招募培训、投资资源、政府对接全程跟进</div></div></div>
-                <div class="flex items-start gap-3"><div class="w-5 h-5 rounded-full bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0 mt-0.5"><svg class="w-3 h-3 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></div><div><div class="font-semibold text-tx text-sm">资金闭环共享</div><div class="text-tx2 text-sm">城投资产包和科创贷收益模型同步开放</div></div></div>
-              </div>
-            </div>
-            <div class="space-y-3">
-              <div class="bg-bg rounded-xl p-4 border border-bd flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0"><svg class="w-5 h-5 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
-                <div class="flex-1"><div class="font-bold text-tx text-sm">洛阳 OPC 中心</div><div class="text-tx3 text-xs">河南洛阳</div></div>
-                <span class="text-xs font-medium text-brand bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100">洽谈中</span>
-              </div>
-              <div class="bg-bg rounded-xl p-4 border border-bd flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-greenlight border border-greenborder flex items-center justify-center flex-shrink-0"><svg class="w-5 h-5 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
-                <div class="flex-1"><div class="font-bold text-tx text-sm">盐城 OPC 中心</div><div class="text-tx3 text-xs">江苏盐城</div></div>
-                <span class="text-xs font-medium text-brand bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100">洽谈中</span>
-              </div>
-              <div class="bg-greenlight rounded-xl p-4 border border-greenborder flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-white border border-greenborder flex items-center justify-center flex-shrink-0"><svg class="w-5 h-5 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg></div>
-                <div class="flex-1"><div class="font-bold text-tx text-sm">你的城市</div><div class="text-tx3 text-xs">欢迎洽谈加盟合作</div></div>
-                <a href="#contact" class="text-xs font-semibold text-green cursor-pointer hover:underline">联系我们</a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════ ROADMAP -->
-  <section id="roadmap" class="py-20 px-4 sm:px-6 lg:px-8 bg-white" aria-labelledby="roadmap-h2">
-    <div class="max-w-5xl mx-auto">
-      <div class="max-w-xl mb-14">
-        <div class="accent-bar mb-4"></div>
-        <h2 id="roadmap-h2" class="text-3xl sm:text-4xl font-bold text-tx mb-4">从签约到规模化</h2>
-        <p class="text-tx2 text-lg">四阶段清晰路径，2026年Q1启动，2027年全国复制。</p>
-      </div>
-
-      <div class="relative">
-        <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-green via-green/40 to-transparent ml-1" aria-hidden="true"></div>
-        <div class="space-y-6">
-          <div class="relative pl-14">
-            <div class="tl-dot">
-              <div class="bg-bg border border-bd rounded-2xl p-6 card-lift cursor-pointer">
-                <div class="flex flex-wrap items-center gap-3 mb-2"><span class="bg-green text-white text-xs font-bold px-3 py-1 rounded-full">筹备期</span><span class="text-tx3 text-sm">2026年 Q1</span></div>
-                <h3 class="text-base font-bold text-tx mb-1">签约落地 · 场地装修 · 系统部署</h3>
-                <p class="text-tx2 text-sm">完成政府合作协议，启动场地改造，部署 OpenClaw + Galaxy OPC 插件，组建运营团队。</p>
-              </div>
-            </div>
-          </div>
-          <div class="relative pl-14">
-            <div class="tl-dot">
-              <div class="bg-bg border border-bd rounded-2xl p-6 card-lift cursor-pointer">
-                <div class="flex flex-wrap items-center gap-3 mb-2"><span class="bg-green text-white text-xs font-bold px-3 py-1 rounded-full">启动期</span><span class="text-tx3 text-sm">2026年 Q2</span></div>
-                <h3 class="text-base font-bold text-tx mb-1">首批30人 · 插件试运营</h3>
-                <p class="text-tx2 text-sm">招募首批30名创业者，完成工商注册、Galaxy OPC 插件部署，验证AI员工系统和资金闭环模型。</p>
-              </div>
-            </div>
-          </div>
-          <div class="relative pl-14">
-            <div class="tl-dot">
-              <div class="bg-bg border border-bd rounded-2xl p-6 card-lift cursor-pointer">
-                <div class="flex flex-wrap items-center gap-3 mb-2"><span class="bg-brand text-white text-xs font-bold px-3 py-1 rounded-full">扩展期</span><span class="text-tx3 text-sm">2026年 Q3 - Q4</span></div>
-                <h3 class="text-base font-bold text-tx mb-1">扩大至100人 · 首批资产包转让</h3>
-                <p class="text-tx2 text-sm">规模扩张至100家一人公司，完成首批科创资产包整合，实现向城投公司的首笔资产转让，打通资金闭环。</p>
-              </div>
-            </div>
-          </div>
-          <div class="relative pl-14">
-            <div class="tl-dot">
-              <div class="bg-bg border border-bd rounded-2xl p-6 card-lift cursor-pointer">
-                <div class="flex flex-wrap items-center gap-3 mb-2"><span class="bg-tx text-white text-xs font-bold px-3 py-1 rounded-full">成熟期</span><span class="text-tx3 text-sm">2027年起</span></div>
-                <h3 class="text-base font-bold text-tx mb-1">规模化运营 · 全国复制推广</h3>
-                <p class="text-tx2 text-sm">完善运营体系，向洛阳、盐城等城市输出标准化模型，Galaxy OPC 插件持续迭代，建立全国OPC生态网络。</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════ ABOUT -->
-  <section class="py-20 px-4 sm:px-6 lg:px-8 bg-bg" aria-labelledby="about-h2">
-    <div class="max-w-7xl mx-auto">
-      <div class="grid lg:grid-cols-2 gap-12 items-center">
         <div>
-          <div class="accent-bar mb-4"></div>
-          <h2 id="about-h2" class="text-3xl sm:text-4xl font-bold text-tx mb-5">四川星河长明数字科技</h2>
-          <p class="text-tx2 text-lg leading-relaxed mb-6">专注数字经济与产业赋能，秉承"科技赋能个体，创新驱动未来"。Galaxy OPC 插件是我们将 AI 能力注入一人公司生态的核心产品。</p>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="bg-white border border-bd rounded-xl p-4"><div class="text-xs font-semibold text-green uppercase tracking-wide mb-1">技术研发</div><div class="text-tx2 text-sm">自主研发 Galaxy OPC 插件，完整 AI 工具技术栈</div></div>
-            <div class="bg-white border border-bd rounded-xl p-4"><div class="text-xs font-semibold text-brand uppercase tracking-wide mb-1">资金实力</div><div class="text-tx2 text-sm">首期投入500万元，具备持续孵化能力</div></div>
-            <div class="bg-white border border-bd rounded-xl p-4"><div class="text-xs font-semibold text-green uppercase tracking-wide mb-1">资源整合</div><div class="text-tx2 text-sm">连接投资人、金融机构、产业资源赋能闭环</div></div>
-            <div class="bg-white border border-bd rounded-xl p-4"><div class="text-xs font-semibold text-green uppercase tracking-wide mb-1">合规运营</div><div class="text-tx2 text-sm">法务团队全程介入，所有环节合法合规</div></div>
+          <div class="card" style="margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div style="width:36px;height:36px;border-radius:8px;background:var(--glow-card);border:1px solid rgba(249,115,22,0.15);display:flex;align-items:center;justify-content:center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              </div>
+              <div>
+                <div style="font-weight:600;font-size:.9375rem">完全私有化</div>
+                <div style="font-size:.8rem;color:var(--tx2)">数据不出本地服务器</div>
+              </div>
+            </div>
+            <p class="body-sm muted">所有对话数据、公司数据均存储在本地 SQLite，无云端依赖，适合处理敏感商业信息。</p>
           </div>
-        </div>
-        <div class="bg-tx rounded-2xl p-8 text-white">
-          <h3 class="text-lg font-bold mb-6">预期社会效益</h3>
-          <div class="space-y-5">
-            <div class="flex items-start gap-4">
-              <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          <div class="card" style="margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div style="width:36px;height:36px;border-radius:8px;background:var(--glow-card);border:1px solid rgba(249,115,22,0.15);display:flex;align-items:center;justify-content:center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path stroke-linecap="round" stroke-linejoin="round" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </div>
-              <div><div class="font-semibold mb-0.5">就业岗位创造</div><div class="text-white/60 text-sm">首年孵化100+一人公司，年产值2000万+，产生稳定税收</div></div>
-            </div>
-            <div class="flex items-start gap-4">
-              <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <div>
+                <div style="font-weight:600;font-size:.9375rem">零代码修改</div>
+                <div style="font-size:.8rem;color:var(--tx2)">纯插件扩展，不侵入主平台</div>
               </div>
-              <div><div class="font-semibold mb-0.5">人才回流激活</div><div class="text-white/60 text-sm">吸引一线城市人才回归家乡，激活区域数字经济创新活力</div></div>
             </div>
-            <div class="flex items-start gap-4">
-              <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            <p class="body-sm muted">galaxy-opc-plugin 通过 OpenClaw Plugin API 注册工具、上下文钩子和 HTTP 路由，升级无风险。</p>
+          </div>
+          <div class="card">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div style="width:36px;height:36px;border-radius:8px;background:var(--glow-card);border:1px solid rgba(249,115,22,0.15);display:flex;align-items:center;justify-content:center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
               </div>
-              <div><div class="font-semibold mb-0.5">可复制创新范本</div><div class="text-white/60 text-sm">探索AI时代就业新模式，为全国其他地区提供可复制的经验</div></div>
+              <div>
+                <div style="font-weight:600;font-size:.9375rem">上下文感知</div>
+                <div style="font-size:.8rem;color:var(--tx2)">AI 自动感知你的公司状态</div>
+              </div>
             </div>
+            <p class="body-sm muted">每次对话自动注入当前公司概况、待办事项、财务摘要，AI 提供有针对性的建议。</p>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ════════════════════════════════════════ CTA -->
-  <section id="contact" class="py-20 px-4 sm:px-6 lg:px-8 cta-bg" aria-labelledby="contact-h2">
-    <div class="max-w-4xl mx-auto text-center">
-      <img src="../galaxy.png" alt="Galaxy logo" class="h-12 mx-auto mb-6 opacity-90" />
-      <h2 id="contact-h2" class="text-3xl sm:text-4xl font-bold text-white mb-4">携手共建AI时代新经济</h2>
-      <p class="text-white/70 text-lg leading-relaxed mb-10 max-w-2xl mx-auto">无论你是创业者、政府官员、城投管理层、投资人，还是有意在本地运营 OPC 中心的合作方，欢迎与我们联系。</p>
-
-      <div class="grid sm:grid-cols-3 gap-4 mb-10">
-        <div class="bg-white/10 border border-white/20 rounded-2xl p-5 text-left cursor-pointer hover:bg-white/15 transition-colors duration-200">
-          <div class="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center mb-3">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-          </div>
-          <div class="font-semibold text-white text-sm mb-1">创业者入驻</div>
-          <div class="text-white/60 text-xs">申请首批孵化成员，获得 Galaxy OPC 插件 + 种子资金</div>
-        </div>
-        <div class="bg-white/10 border border-white/20 rounded-2xl p-5 text-left cursor-pointer hover:bg-white/15 transition-colors duration-200">
-          <div class="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center mb-3">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
-          </div>
-          <div class="font-semibold text-white text-sm mb-1">政府/城投合作</div>
-          <div class="text-white/60 text-xs">探讨场地合作与科创资产赋能方案，财政零负担</div>
-        </div>
-        <div class="bg-white/10 border border-white/20 rounded-2xl p-5 text-left cursor-pointer hover:bg-white/15 transition-colors duration-200">
-          <div class="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center mb-3">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          </div>
-          <div class="font-semibold text-white text-sm mb-1">投资/加盟合作</div>
-          <div class="text-white/60 text-xs">了解投资结构与城市加盟方案，共享规模化红利</div>
-        </div>
+  <!-- ── SOLUTION (Three Pillars) ── -->
+  <section id="solution" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">解决方案</span>
+        <h2 class="display-lg">三大核心能力</h2>
+        <p>从公司注册到退出，覆盖一人公司经营的全部关键场景</p>
       </div>
+      <div class="grid-3">
+        <div class="card card-glow">
+          <div class="pillar-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          </div>
+          <h3 style="font-size:1.125rem;font-weight:700;margin-bottom:10px">公司全生命周期管理</h3>
+          <p class="body-sm muted" style="margin-bottom:16px">从注册选址到股权融资，再到并购退出，AI 全程陪伴决策。</p>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="tag">工商注册与变更</div>
+            <div class="tag">股权结构设计</div>
+            <div class="tag">合规风险预警</div>
+            <div class="tag">公司并购与退出</div>
+          </div>
+        </div>
 
-      <div class="flex flex-wrap justify-center gap-4">
-        <a href="mailto:contact@galaxy-opc.com" class="bg-white text-tx font-semibold px-8 py-3 rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer flex items-center gap-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-          发送邮件
-        </a>
-        <a href="https://github.com/P3ngSaM/galaxy-opc" target="_blank" rel="noopener noreferrer" class="bg-white/10 border border-white/30 text-white font-semibold px-8 py-3 rounded-xl hover:bg-white/20 transition-colors duration-200 cursor-pointer flex items-center gap-2">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
-          开源代码
-        </a>
+        <div class="card card-glow">
+          <div class="pillar-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <h3 style="font-size:1.125rem;font-weight:700;margin-bottom:10px">AI 员工体系</h3>
+          <p class="body-sm muted" style="margin-bottom:16px">财务总监、法务顾问、HR 负责人、媒体运营……一个AI充当多个角色。</p>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="tag">AI 财务总监</div>
+            <div class="tag">AI 法务顾问</div>
+            <div class="tag">AI 人事主管</div>
+            <div class="tag">AI 媒体运营</div>
+          </div>
+        </div>
+
+        <div class="card card-glow">
+          <div class="pillar-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <h3 style="font-size:1.125rem;font-weight:700;margin-bottom:10px">投资与资金闭环</h3>
+          <p class="body-sm muted" style="margin-bottom:16px">从融资路演到资产包打包，帮助一人公司完成商业闭环。</p>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="tag">投资人管理</div>
+            <div class="tag">融资路演素材</div>
+            <div class="tag">资产包估值</div>
+            <div class="tag">客户获取漏斗</div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ════════════════════════════════════════ FOOTER -->
-  <footer class="bg-tx py-8 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <img src="../galaxy.png" alt="Galaxy logo" class="h-7 w-auto opacity-80" />
+  <!-- ── BUSINESS MODEL ── -->
+  <section id="model" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">商业模式</span>
+        <h2 class="display-lg">星环如何创造价值</h2>
+        <p>以孵化为切入点，以赋能为护城河，以加盟网络放大规模</p>
+      </div>
+
+      <div class="model-flow">
+        <div class="model-step">
+          <div class="model-step-num">01</div>
+          <h4>星环孵化</h4>
+          <p>直接注册并运营一人公司，以自身作为产品的第一批验证用户，积累真实运营数据与最佳实践。</p>
+        </div>
+        <div class="model-step">
+          <div class="model-step-num">02</div>
+          <h4>平台赋能</h4>
+          <p>通过 galaxy-opc-plugin 将运营经验沉淀为AI工具，向其他创业者输出"以AI为员工"的运营方法论。</p>
+        </div>
+        <div class="model-step">
+          <div class="model-step-num">03</div>
+          <h4>加盟扩张</h4>
+          <p>洛阳OPC、盐城OPC等城市合伙人以加盟形式复制"星环模式"，形成全国OPC孵化网络。</p>
+        </div>
+        <div class="model-step">
+          <div class="model-step-num">04</div>
+          <h4>资本退出</h4>
+          <p>成熟OPC通过资产包打包、并购、IPO等方式实现资本化退出，形成完整的商业闭环。</p>
+        </div>
+      </div>
+
+      <div class="revenue-grid">
+        <div class="revenue-card">
+          <div class="amount">SaaS</div>
+          <div class="label">插件订阅授权费用</div>
+        </div>
+        <div class="revenue-card">
+          <div class="amount">加盟</div>
+          <div class="label">城市合伙人加盟收益</div>
+        </div>
+        <div class="revenue-card">
+          <div class="amount">资本</div>
+          <div class="label">OPC 并购 / 投资退出</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── AUDIENCE ── -->
+  <section id="audience" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">服务对象</span>
+        <h2 class="display-lg">谁需要星环OPC？</h2>
+        <p>从个人创业者到政府机构，我们为五类核心用户提供差异化价值</p>
+      </div>
+
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('entrepreneur')">个人创业者</button>
+        <button class="tab-btn" onclick="switchTab('government')">政府决策者</button>
+        <button class="tab-btn" onclick="switchTab('corporate')">产业收购方</button>
+        <button class="tab-btn" onclick="switchTab('investor')">投资人</button>
+        <button class="tab-btn" onclick="switchTab('franchise')">加盟运营商</button>
+      </div>
+
+      <div id="tab-entrepreneur" class="tab-panel active">
+        <div class="audience-card">
+          <div class="role">个人创业者 · 独立经营者</div>
+          <h3>用AI武装，一个人顶一支团队</h3>
+          <ul class="pain-list">
+            <li>公司注册、税务、法务全靠外包，成本高、响应慢</li>
+            <li>没有专职HR、没有财务，很多事情自己摸索</li>
+            <li>想融资但不知道如何准备材料、接触投资人</li>
+            <li>业务增长后，管理压力远超执行压力</li>
+          </ul>
+          <p class="body-sm muted" style="margin-bottom:12px"><strong style="color:var(--tx)">星环为你提供：</strong></p>
+          <div class="solution-tags">
+            <span class="tag">AI 全栈 CFO</span>
+            <span class="tag">AI 法务顾问</span>
+            <span class="tag">注册流程引导</span>
+            <span class="tag">融资路演包</span>
+            <span class="tag">每日业务提醒</span>
+            <span class="tag">本地私有化部署</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-government" class="tab-panel">
+        <div class="audience-card">
+          <div class="role">政府决策者 · 政策制定者</div>
+          <h3>以OPC模式激活县域创业生态</h3>
+          <ul class="pain-list">
+            <li>传统招商引资门槛高，难以吸引轻资产创业者</li>
+            <li>创业园区入驻率低，OPC可低成本充实产业生态</li>
+            <li>AI 赋能创业的政策落地缺少可复制的载体</li>
+            <li>返乡创业者缺乏系统性支撑，留存率低</li>
+          </ul>
+          <p class="body-sm muted" style="margin-bottom:12px"><strong style="color:var(--tx)">星环为你提供：</strong></p>
+          <div class="solution-tags">
+            <span class="tag">OPC 孵化基地方案</span>
+            <span class="tag">政策申报辅助</span>
+            <span class="tag">创业数据看板</span>
+            <span class="tag">AI 创业生态报告</span>
+            <span class="tag">城市合伙人机制</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-corporate" class="tab-panel">
+        <div class="audience-card">
+          <div class="role">城投 · 上市公司 · 大型民企</div>
+          <h3>并购优质OPC，低成本扩展业务版图</h3>
+          <ul class="pain-list">
+            <li>传统并购标的规模大、整合成本高、风险不可控</li>
+            <li>缺乏发现早期高质量标的的渠道与数据</li>
+            <li>轻资产数字化公司的价值评估缺少标准方法</li>
+            <li>新业务孵化周期长、失败率高、资源浪费大</li>
+          </ul>
+          <p class="body-sm muted" style="margin-bottom:12px"><strong style="color:var(--tx)">星环为你提供：</strong></p>
+          <div class="solution-tags">
+            <span class="tag">OPC 资产包评估</span>
+            <span class="tag">并购目标筛选</span>
+            <span class="tag">标准化尽调数据</span>
+            <span class="tag">业务孵化合作</span>
+            <span class="tag">产业基金协同</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-investor" class="tab-panel">
+        <div class="audience-card">
+          <div class="role">星环领投 · 个人投资者 · 机构</div>
+          <h3>投资一个能自我生长的AI创业生态</h3>
+          <ul class="pain-list">
+            <li>早期项目信息不透明，难以评估真实运营质量</li>
+            <li>轻资产项目缺乏可信的财务数据与成长轨迹</li>
+            <li>传统VC模式回报周期长，中小机构难以布局</li>
+            <li>AI 创业赛道拥挤，差异化标的稀缺</li>
+          </ul>
+          <p class="body-sm muted" style="margin-bottom:12px"><strong style="color:var(--tx)">星环为你提供：</strong></p>
+          <div class="solution-tags">
+            <span class="tag">OPC 实时运营数据</span>
+            <span class="tag">AI 生成投资简报</span>
+            <span class="tag">加盟网络收益权</span>
+            <span class="tag">资产包优先认购</span>
+            <span class="tag">星环领投跟投机制</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-franchise" class="tab-panel">
+        <div class="audience-card">
+          <div class="role">洛阳OPC · 盐城OPC · 城市合伙人</div>
+          <h3>复制星环模式，做你城市的OPC孵化基地</h3>
+          <ul class="pain-list">
+            <li>想创业但缺乏可验证的商业模式</li>
+            <li>有本地资源和人脉，但缺少系统化运营工具</li>
+            <li>AI 创业风口已至，不知从何切入本地市场</li>
+            <li>单打独斗难以形成品牌效应和规模壁垒</li>
+          </ul>
+          <p class="body-sm muted" style="margin-bottom:12px"><strong style="color:var(--tx)">星环为你提供：</strong></p>
+          <div class="solution-tags">
+            <span class="tag">完整运营体系授权</span>
+            <span class="tag">galaxy-opc-plugin 使用权</span>
+            <span class="tag">孵化服务收益分成</span>
+            <span class="tag">品牌与流量支持</span>
+            <span class="tag">星环总部赋能培训</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ROADMAP ── -->
+  <section id="roadmap" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">发展路径</span>
+        <h2 class="display-lg">从0到生态的四个阶段</h2>
+      </div>
+      <div class="roadmap-track">
+        <div class="phase-card">
+          <div class="phase-label">Phase 1 · 已完成</div>
+          <div class="phase-title">基础平台搭建</div>
+          <ul class="phase-items">
+            <li>OpenClaw 私有化部署</li>
+            <li>galaxy-opc-plugin 核心工具</li>
+            <li>SQLite 本地数据库</li>
+            <li>Web 管理后台</li>
+          </ul>
+        </div>
+        <div class="phase-card current">
+          <div class="phase-label">Phase 2 · 进行中</div>
+          <div class="phase-title">专业工具扩展</div>
+          <ul class="phase-items">
+            <li>财务 / 法务 / HR 工具</li>
+            <li>媒体 / 项目管理</li>
+            <li>自动提醒服务</li>
+            <li>Skills 技能市场</li>
+          </ul>
+        </div>
+        <div class="phase-card">
+          <div class="phase-label">Phase 3 · 规划中</div>
+          <div class="phase-title">商业闭环落地</div>
+          <ul class="phase-items">
+            <li>投资管理工具</li>
+            <li>采购 / 监控工具</li>
+            <li>资产包评估系统</li>
+            <li>城市加盟首批落地</li>
+          </ul>
+        </div>
+        <div class="phase-card">
+          <div class="phase-label">Phase 4 · 愿景</div>
+          <div class="phase-title">生态规模化</div>
+          <ul class="phase-items">
+            <li>全国OPC加盟网络</li>
+            <li>OPC 资产包交易市场</li>
+            <li>机构投资者进入</li>
+            <li>政府合作项目</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ABOUT ── -->
+  <section id="about" class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">关于我们</span>
+        <h2 class="display-lg">星环的信念</h2>
+      </div>
+      <div class="about-grid">
         <div>
-          <div class="text-white/70 text-sm font-medium">星环 Galaxy OPC</div>
-          <div class="text-white/30 text-xs">四川星河长明数字科技有限责任公司</div>
+          <p class="body-lg muted" style="margin-bottom:28px">
+            星环OPC中心由 p3ngsam 创立，核心信念是：
+            <strong style="color:var(--tx)">在AI时代，一个人可以经营一家真正的公司</strong>。
+            我们不是在做工具，而是在验证一种新的商业文明——
+            以AI为员工，以数据为资产，以网络效应为护城河。
+          </p>
+          <ul class="values-list">
+            <li>
+              <div class="v-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div class="v-text">
+                <strong>自食其力</strong>
+                <span>星环自身就是第一个OPC，用自己的产品经营自己</span>
+              </div>
+            </li>
+            <li>
+              <div class="v-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              </div>
+              <div class="v-text">
+                <strong>极简运营</strong>
+                <span>低成本、高效率，让每个环节的ROI都清晰可见</span>
+              </div>
+            </li>
+            <li>
+              <div class="v-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
+              </div>
+              <div class="v-text">
+                <strong>开放生态</strong>
+                <span>以加盟网络为载体，让更多人共享OPC红利</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="font-size:1.125rem;font-weight:700;margin-bottom:20px">战略合作伙伴</h3>
+          <div class="partner-logos">
+            <span class="partner-tag">OpenClaw</span>
+            <span class="partner-tag">洛阳OPC中心</span>
+            <span class="partner-tag">盐城OPC中心</span>
+          </div>
+          <div style="margin-top:36px">
+            <h3 style="font-size:1.125rem;font-weight:700;margin-bottom:16px">技术栈</h3>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <span class="tag">OpenClaw Plugin API</span>
+              <span class="tag">Node.js ESM</span>
+              <span class="tag">TypeScript</span>
+              <span class="tag">SQLite (better-sqlite3)</span>
+              <span class="tag">TypeBox Schema</span>
+              <span class="tag">galaxy-opc CLI</span>
+            </div>
+          </div>
+          <div class="card" style="margin-top:28px;background:var(--bg2)">
+            <p class="body-sm" style="color:var(--tx2);margin-bottom:12px">
+              <strong style="color:var(--tx)">当前版本</strong>：galaxy-opc@0.3.8 · galaxy-opc-plugin@0.1.1
+            </p>
+            <p class="body-sm muted">需要 Node.js ≥ 22、OpenClaw 已安装。一键安装后插件随 gateway 启动自动加载。</p>
+          </div>
         </div>
       </div>
-      <div class="flex items-center gap-5 text-white/30 text-xs">
-        <a href="#plugin"   class="hover:text-white/60 transition-colors duration-200 cursor-pointer">插件介绍</a>
-        <a href="#model"    class="hover:text-white/60 transition-colors duration-200 cursor-pointer">商业模式</a>
-        <a href="https://github.com/P3ngSaM/galaxy-opc" target="_blank" rel="noopener noreferrer" class="hover:text-white/60 transition-colors duration-200 cursor-pointer">GitHub</a>
-        <span>© 2026 星河数科</span>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section id="cta" class="section">
+    <div class="container">
+      <div class="cta-inner">
+        <img id="cta-logo" class="cta-logo" src="galaxy.png" alt="Galaxy OPC" />
+        <h2 class="display-lg" style="margin-bottom:16px">准备好了吗？</h2>
+        <p class="body-lg muted">
+          无论你是创业者、加盟商还是投资人，
+          星环OPC中心都期待与你探讨合作可能。
+        </p>
+        <div class="cta-actions">
+          <a href="mailto:p3ngsam@163.com" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            发送邮件
+          </a>
+          <a href="mailto:p3ngsam@163.com" class="email-link">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            p3ngsam@163.com
+          </a>
+        </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <img id="footer-logo" src="galaxy.png" alt="Galaxy OPC" />
+        <div>
+          <div style="font-weight:700;font-size:.9375rem">星环 Galaxy OPC</div>
+          <div class="footer-tagline">AI时代的一人公司孵化与赋能平台</div>
+        </div>
+      </div>
+      <div class="footer-links">
+        <a href="#plugin">平台介绍</a>
+        <a href="#model">商业模式</a>
+        <a href="#audience">服务对象</a>
+        <a href="mailto:p3ngsam@163.com">联系我们</a>
+      </div>
+      <div class="footer-copy">© 2025 星环OPC中心. MIT License.</div>
     </div>
   </footer>
 
-  <!-- ════════════════════════════════════════ JS -->
   <script>
-    // Mobile menu
-    const menuBtn = document.getElementById('menu-btn');
-    const mobileMenu = document.getElementById('mobile-menu');
-    const icoOpen  = document.getElementById('ico-open');
-    const icoClose = document.getElementById('ico-close');
-    let menuOpen = false;
-    menuBtn.addEventListener('click', function() {
-      menuOpen = !menuOpen;
-      menuBtn.setAttribute('aria-expanded', menuOpen);
-      mobileMenu.classList.toggle('open', menuOpen);
-      icoOpen.classList.toggle('hidden', menuOpen);
-      icoClose.classList.toggle('hidden', !menuOpen);
-    });
-    document.querySelectorAll('.mobile-link').forEach(function(l) {
-      l.addEventListener('click', function() {
-        menuOpen = false;
-        menuBtn.setAttribute('aria-expanded', 'false');
-        mobileMenu.classList.remove('open');
-        icoOpen.classList.remove('hidden');
-        icoClose.classList.add('hidden');
-      });
-    });
+    // ── Theme ──
+    var html = document.documentElement;
+    var navLogoImg = document.getElementById('nav-logo-img');
+    var heroLogoImg = document.getElementById('hero-logo');
+    var ctaLogoImg = document.getElementById('cta-logo');
+    var footerLogoImg = document.getElementById('footer-logo');
+    var iconMoon = document.getElementById('icon-moon');
+    var iconSun = document.getElementById('icon-sun');
 
-    // Audience tabs
-    const tabs   = document.querySelectorAll('.audience-tab');
-    const panels = document.querySelectorAll('.audience-panel');
-    tabs.forEach(function(tab) {
-      tab.addEventListener('click', function() {
-        const target = tab.getAttribute('data-tab');
-        tabs.forEach(function(t) {
-          t.classList.remove('tab-active');
-          t.classList.add('bg-white','border-bd','text-tx2');
-          t.removeAttribute('aria-selected');
-        });
-        tab.classList.add('tab-active');
-        tab.classList.remove('bg-white','border-bd','text-tx2');
-        tab.setAttribute('aria-selected','true');
-        panels.forEach(function(p) { p.classList.remove('active'); });
-        var panel = document.getElementById('panel-' + target);
-        if (panel) panel.classList.add('active');
-      });
-    });
+    function setTheme(theme) {
+      html.setAttribute('data-theme', theme);
+      localStorage.setItem('opc-theme', theme);
+      var isDark = theme === 'dark';
+      var logo = isDark ? 'galaxy.png' : 'galaxy_black.png';
+      navLogoImg.src = logo;
+      heroLogoImg.src = logo;
+      ctaLogoImg.src = logo;
+      footerLogoImg.src = logo;
+      iconMoon.style.display = isDark ? 'block' : 'none';
+      iconSun.style.display = isDark ? 'none' : 'block';
+    }
+
+    function toggleTheme() {
+      var current = html.getAttribute('data-theme');
+      setTheme(current === 'dark' ? 'light' : 'dark');
+    }
+
+    // Init theme: saved > system > dark default
+    (function() {
+      var saved = localStorage.getItem('opc-theme');
+      if (saved === 'light' || saved === 'dark') {
+        setTheme(saved);
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+        setTheme('light');
+      } else {
+        setTheme('dark');
+      }
+    })();
+
+    // ── Audience tabs ──
+    function switchTab(id) {
+      document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+      event.currentTarget.classList.add('active');
+      document.getElementById('tab-' + id).classList.add('active');
+    }
   </script>
 </body>
 </html>
