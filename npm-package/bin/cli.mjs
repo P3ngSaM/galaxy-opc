@@ -128,8 +128,6 @@ const HOME        = os.homedir();
 const STATE_DIR   = path.join(HOME, ".openclaw");
 const CONFIG_PATH = path.join(STATE_DIR, "openclaw.json");
 const ENV_PATH    = path.join(STATE_DIR, ".env");
-// 插件由 openclaw plugins install 写入 ~/.openclaw/extensions/galaxy-opc-plugin
-const PLUGIN_INSTALL_DIR = path.join(STATE_DIR, "extensions", "galaxy-opc-plugin");
 
 // ─── 命令路由 ───────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -208,8 +206,9 @@ ${bold(cyan("  ╚════════════════════�
   console.log(bold("  步骤 3 / 4  安装 OPC Platform 插件"));
   separator();
 
-  if (fs.existsSync(PLUGIN_INSTALL_DIR)) {
-    console.log(yellow(`  检测到插件已存在: ${PLUGIN_INSTALL_DIR}`));
+  const pluginInstallDir = path.join(STATE_DIR, "extensions", "galaxy-opc-plugin");
+  if (fs.existsSync(pluginInstallDir)) {
+    console.log(yellow(`  检测到插件已存在: ${pluginInstallDir}`));
     const update = await askYesNo("  更新到最新版本？", true);
     if (!update) {
       console.log(green("  ✓ 跳过，使用现有版本"));
@@ -225,6 +224,25 @@ ${bold(cyan("  ╚════════════════════�
 }
 
 async function installPlugin() {
+  // 清理可能残留的旧插件路径配置，否则 openclaw 会因路径不存在而拒绝启动
+  const cfg = readJson(CONFIG_PATH);
+  let dirty = false;
+  if (cfg.plugins?.load?.paths?.length) {
+    delete cfg.plugins.load.paths;
+    dirty = true;
+  }
+  if (cfg.plugins?.load && Object.keys(cfg.plugins.load).length === 0) {
+    delete cfg.plugins.load;
+  }
+  if (cfg.plugins?.entries?.["opc-platform"]) {
+    delete cfg.plugins.entries["opc-platform"];
+    dirty = true;
+  }
+  if (dirty) {
+    writeJson(CONFIG_PATH, cfg);
+    console.log(dim("  已清理旧插件配置"));
+  }
+
   console.log(dim("  正在通过 OpenClaw 安装插件...\n"));
   try {
     await runCommand("openclaw", ["plugins", "install", "galaxy-opc-plugin"]);
@@ -246,19 +264,14 @@ async function cmdSetup() {
   let newConfig = readJson(CONFIG_PATH);
   let newEnv    = readEnv(ENV_PATH);
 
-  // 注册插件路径（plugins.load.paths 是 openclaw 识别的正确 key）
-  const existingPaths = newConfig.plugins?.load?.paths ?? [];
-  const mergedPaths = Array.from(new Set([...existingPaths, PLUGIN_INSTALL_DIR]));
+  // gateway.mode 必须设置否则无法启动
   newConfig = deepMerge(newConfig, {
     gateway: { mode: "local" },
-    plugins: { load: { paths: mergedPaths } },
   });
 
-  // 清理可能残留的错误 entries key（openclaw plugins install 会写入 galaxy-opc-plugin，
-  // 但旧版本或手动配置可能留下 opc-platform key 导致 id mismatch 警告）
-  if (newConfig.plugins?.entries?.["opc-platform"]) {
-    delete newConfig.plugins.entries["opc-platform"];
-  }
+  // 清理残留的旧插件路径（由旧版向导写入，openclaw 会因路径不存在报错）
+  if (newConfig.plugins?.load?.paths) delete newConfig.plugins.load.paths;
+  if (newConfig.plugins?.entries?.["opc-platform"]) delete newConfig.plugins.entries["opc-platform"];
 
   const regionIdx = await askChoice("选择 AI 模型地区", [
     { label: "国产模型", desc: "通义千问 / MiniMax / 豆包 / Kimi / DeepSeek", recommended: true },
