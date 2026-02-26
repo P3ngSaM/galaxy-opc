@@ -14,10 +14,6 @@ import readline from "node:readline";
 import { execSync, spawn } from "node:child_process";
 import crypto from "node:crypto";
 
-const PLUGIN_REPO_GITHUB = "https://github.com/P3ngSaM/galaxy-opc.git";
-const PLUGIN_REPO_GITEE  = "https://gitee.com/peng-sam/galaxy-opc.git";
-const PLUGIN_DIR_NAME    = "opc-platform";
-
 // ─── 颜色工具 ───────────────────────────────────────────────────────────────
 const c = {
   reset: "\x1b[0m", bold: "\x1b[1m", dim: "\x1b[2m",
@@ -127,25 +123,13 @@ function getOpenclawVersion() {
   }
 }
 
-// 检测国内网络，自动选择 Gitee 或 GitHub
-async function detectRepoUrl() {
-  return new Promise((resolve) => {
-    const req = spawn("git", ["ls-remote", "--exit-code", "--heads", PLUGIN_REPO_GITHUB, "main"], {
-      stdio: "ignore", timeout: 5000,
-    });
-    const timer = setTimeout(() => { req.kill(); resolve(PLUGIN_REPO_GITEE); }, 5000);
-    req.on("close", (code) => { clearTimeout(timer); resolve(code === 0 ? PLUGIN_REPO_GITHUB : PLUGIN_REPO_GITEE); });
-    req.on("error", () => { clearTimeout(timer); resolve(PLUGIN_REPO_GITEE); });
-  });
-}
-
 // ─── 路径常量 ───────────────────────────────────────────────────────────────
-const HOME       = os.homedir();
-const STATE_DIR  = path.join(HOME, ".openclaw");
+const HOME        = os.homedir();
+const STATE_DIR   = path.join(HOME, ".openclaw");
 const CONFIG_PATH = path.join(STATE_DIR, "openclaw.json");
-const ENV_PATH   = path.join(STATE_DIR, ".env");
-// 插件存放在 ~/.openclaw/extensions/opc-platform
-const PLUGIN_INSTALL_DIR = path.join(STATE_DIR, "extensions", PLUGIN_DIR_NAME);
+const ENV_PATH    = path.join(STATE_DIR, ".env");
+// 插件由 openclaw plugins install 写入 ~/.openclaw/extensions/opc-platform
+const PLUGIN_INSTALL_DIR = path.join(STATE_DIR, "extensions", "opc-platform");
 
 // ─── 命令路由 ───────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -183,12 +167,6 @@ ${bold(cyan("  ╚════════════════════�
   }
   console.log(green(`  ✓ Node.js v${process.versions.node}`));
 
-  if (!checkTool("git")) {
-    console.error(red("\n  ✗ 未检测到 git，请先安装: https://git-scm.com/\n"));
-    process.exit(1);
-  }
-  console.log(green("  ✓ git 已安装"));
-
   // ── 步骤 2：安装 openclaw ────────────────────────────────────────────────
   separator();
   console.log(bold("  步骤 2 / 4  安装 OpenClaw 核心"));
@@ -198,13 +176,13 @@ ${bold(cyan("  ╚════════════════════�
   if (ocVersion) {
     console.log(green(`  ✓ OpenClaw 已安装 (${ocVersion})`));
   } else {
-    console.log(dim("  正在安装 OpenClaw（官方核心，约 10MB）...\n"));
+    console.log(dim("  正在安装 OpenClaw（首次安装约 80MB+，使用国内镜像加速）...\n"));
     try {
-      await runCommand("npm", ["install", "-g", "openclaw@latest"]);
+      await runCommand("npm", ["install", "-g", "openclaw@latest", "--registry", "https://registry.npmmirror.com"]);
       console.log(green("\n  ✓ OpenClaw 安装完成"));
     } catch {
       console.error(red("\n  ✗ OpenClaw 安装失败，请手动运行:"));
-      console.error(gray("    npm install -g openclaw@latest\n"));
+      console.error(gray("    npm install -g openclaw@latest --registry https://registry.npmmirror.com\n"));
       process.exit(1);
     }
   }
@@ -220,59 +198,26 @@ ${bold(cyan("  ╚════════════════════�
     if (!update) {
       console.log(green("  ✓ 跳过，使用现有版本"));
     } else {
-      await downloadPlugin();
+      await installPlugin();
     }
   } else {
-    await downloadPlugin();
-  }
-
-  // 安装插件依赖
-  console.log(dim("\n  安装插件依赖...\n"));
-  try {
-    await runCommand("npm", ["install", "--prefix", PLUGIN_INSTALL_DIR, "--omit=dev"]);
-    console.log(green("  ✓ 插件依赖安装完成"));
-  } catch {
-    console.log(yellow("  ! 插件依赖安装失败，部分功能可能受影响"));
+    await installPlugin();
   }
 
   // ── 步骤 4：配置模型 ────────────────────────────────────────────────────
   await cmdSetup();
 }
 
-async function downloadPlugin() {
-  const tmpDir = path.join(os.tmpdir(), `galaxy-opc-${Date.now()}`);
-
-  console.log(dim("  检测网络，选择最快下载源..."));
-  const repoUrl = await detectRepoUrl();
-  const source = repoUrl.includes("gitee") ? "Gitee（国内加速）" : "GitHub";
-  console.log(green(`  ✓ 使用 ${source}`));
-  console.log(dim("  正在下载插件...\n"));
-
+async function installPlugin() {
+  console.log(dim("  正在通过 OpenClaw 安装插件...\n"));
   try {
-    await runCommand("git", ["clone", "--depth", "1", repoUrl, tmpDir]);
+    await runCommand("openclaw", ["plugins", "install", "galaxy-opc-plugin"]);
+    console.log(green("\n  ✓ 插件安装完成"));
   } catch (e) {
-    console.error(red(`\n  ✗ 下载失败: ${e.message}`));
+    console.error(red(`\n  ✗ 插件安装失败: ${e.message}`));
+    console.error(gray("  请手动运行: openclaw plugins install galaxy-opc-plugin\n"));
     process.exit(1);
   }
-
-  // 把 extensions/opc-platform 复制到 ~/.openclaw/extensions/opc-platform
-  const srcPlugin = path.join(tmpDir, "extensions", PLUGIN_DIR_NAME);
-  if (!fs.existsSync(srcPlugin)) {
-    console.error(red(`\n  ✗ 插件目录不存在: ${srcPlugin}`));
-    process.exit(1);
-  }
-
-  ensureDir(path.join(STATE_DIR, "extensions"));
-  if (fs.existsSync(PLUGIN_INSTALL_DIR)) {
-    fs.rmSync(PLUGIN_INSTALL_DIR, { recursive: true, force: true });
-  }
-  fs.cpSync(srcPlugin, PLUGIN_INSTALL_DIR, { recursive: true,
-    filter: (src) => !src.includes("node_modules") && !src.includes(".git"),
-  });
-
-  // 清理临时目录
-  fs.rmSync(tmpDir, { recursive: true, force: true });
-  console.log(green(`  ✓ 插件已安装到 ${PLUGIN_INSTALL_DIR}`));
 }
 
 // ─── setup：配置 AI 模型 + 写入 openclaw.json ───────────────────────────────
