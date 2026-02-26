@@ -360,9 +360,15 @@ async function cmdSetup() {
     console.log(yellow(`\n  已跳过，稍后手动编辑: ${gray(CONFIG_PATH)}`));
   }
 
-  // Gateway Token
-  if (!newEnv["OPENCLAW_GATEWAY_TOKEN"] || newEnv["OPENCLAW_GATEWAY_TOKEN"] === "change-me-to-a-long-random-token") {
-    newEnv["OPENCLAW_GATEWAY_TOKEN"] = crypto.randomBytes(32).toString("hex");
+  // Gateway Token — 写入 openclaw.json（openclaw 从这里读取鉴权 token）
+  const existingToken = newConfig.gateway?.auth?.token;
+  const gatewayToken = (existingToken && existingToken !== "change-me-to-a-long-random-token")
+    ? existingToken
+    : crypto.randomBytes(16).toString("hex");
+  newConfig = deepMerge(newConfig, {
+    gateway: { auth: { mode: "token", token: gatewayToken } },
+  });
+  if (!existingToken || existingToken === "change-me-to-a-long-random-token") {
     console.log(green("\n  ✓ 已自动生成 Gateway 访问令牌"));
   }
 
@@ -377,8 +383,8 @@ async function cmdSetup() {
   启动命令:
     ${cyan("openclaw gateway")}
 
-  管理后台:
-    ${cyan("http://localhost:18789/opc/admin")}
+  管理后台（需带 token）:
+    ${cyan(`http://localhost:18789/opc/admin?token=${gatewayToken}`)}
 
   后台驻守（开机自启）:
     ${cyan("openclaw onboard --install-daemon")}

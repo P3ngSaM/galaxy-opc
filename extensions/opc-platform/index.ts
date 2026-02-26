@@ -45,7 +45,7 @@ function resolveDbPath(configured?: string): string {
 let db: OpcDatabase | null = null;
 
 const plugin = {
-  id: "opc-platform",
+  id: "galaxy-opc-plugin",
   name: "OPC Platform",
   description: "星环OPC中心 — 一人公司孵化与赋能平台",
   configSchema: Type.Object({

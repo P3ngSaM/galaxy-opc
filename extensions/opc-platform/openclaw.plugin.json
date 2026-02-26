@@ -1,8 +1,8 @@
 {
-  "id": "opc-platform",
+  "id": "galaxy-opc-plugin",
   "name": "OPC Platform",
   "description": "星环OPC中心 — 一人公司孵化与赋能平台",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "skills": ["./skills"],
   "configSchema": {
     "type": "object",
