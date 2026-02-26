@@ -1,23 +1,47 @@
 {
-  "name": "@openclaw/opc-platform",
+  "name": "galaxy-opc-plugin",
   "version": "0.1.0",
-  "description": "星环OPC中心 — 一人公司孵化与赋能平台插件",
+  "description": "星环 Galaxy OPC — 一人公司孵化与赋能平台 OpenClaw 插件",
+  "keywords": [
+    "openclaw",
+    "openclaw-plugin",
+    "opc",
+    "one-person-company",
+    "ai",
+    "business",
+    "startup"
+  ],
+  "homepage": "https://github.com/P3ngSaM/galaxy-opc",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/P3ngSaM/galaxy-opc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/P3ngSaM/galaxy-opc/issues"
+  },
+  "license": "MIT",
+  "author": "p3ngsam",
   "type": "module",
+  "files": [
+    "index.ts",
+    "src/",
+    "skills/",
+    "openclaw.plugin.json"
+  ],
   "dependencies": {
     "@sinclair/typebox": "0.34.48",
     "better-sqlite3": "^11.8.1"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.12",
-    "openclaw": "workspace:*"
+    "@types/better-sqlite3": "^7.6.12"
   },
   "openclaw": {
     "extensions": [
       "./index.ts"
     ],
     "install": {
-      "localPath": "extensions/opc-platform",
-      "defaultChoice": "local"
+      "npmSpec": "galaxy-opc-plugin",
+      "defaultChoice": "npm"
     }
   }
 }

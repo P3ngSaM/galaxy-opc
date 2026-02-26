@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org/)
 [![OpenClaw](https://img.shields.io/badge/OpenClaw-2026.x-orange)](https://github.com/openclaw/openclaw)
-[![npm](https://img.shields.io/npm/v/galaxy-opc)](https://www.npmjs.com/package/galaxy-opc)
+[![npm](https://img.shields.io/npm/v/galaxy-opc-plugin)](https://www.npmjs.com/package/galaxy-opc-plugin)
 
 ---
 
@@ -20,26 +20,62 @@
 
 ## 快速开始
 
-一条命令完成安装和初始化：
+### 第一步：安装 OpenClaw
+
+[OpenClaw](https://github.com/openclaw/openclaw) 是运行本插件的底层 AI 网关，先全局安装：
 
 ```bash
-npx galaxy-opc
+npm install -g openclaw
 ```
 
-向导会自动完成：
+### 第二步：安装 Galaxy OPC 插件
 
-1. 检查环境（Node.js >= 22 / git）
-2. 全局安装 OpenClaw（`npm install -g openclaw`）
-3. 下载并安装 OPC Platform 插件（自动选择 GitHub / Gitee 加速）
-4. 配置 AI 模型（选择国产或海外模型，输入 API Key）
+```bash
+openclaw plugins install galaxy-opc-plugin
+```
 
-安装完成后启动服务：
+OpenClaw 会自动从 npm 下载插件并写入配置。
+
+### 第三步：配置 AI 模型
+
+编辑 `~/.openclaw/openclaw.json`，填入你的 AI 模型和 API Key：
+
+```json
+{
+  "models": {
+    "providers": {
+      "dashscope": {
+        "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "apiKey": "sk-你的Key",
+        "api": "openai-completions",
+        "models": [{ "id": "qwen-plus", "name": "Qwen Plus", "contextWindow": 128000, "maxTokens": 8192 }]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": { "primary": "dashscope/qwen-plus" }
+    }
+  }
+}
+```
+
+> 支持的模型见下方「支持的 AI 模型」章节。
+
+### 第四步：启动
 
 ```bash
 openclaw gateway
 ```
 
 打开管理后台：`http://localhost:18789/opc/admin`
+
+---
+
+> **懒人一键安装**（自动完成以上全部步骤）：
+> ```bash
+> npx galaxy-opc
+> ```
 
 ---
 
