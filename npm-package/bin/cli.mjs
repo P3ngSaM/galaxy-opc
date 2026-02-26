@@ -177,13 +177,29 @@ ${bold(cyan("  ╚════════════════════�
     console.log(green(`  ✓ OpenClaw 已安装 (${ocVersion})`));
   } else {
     console.log(dim("  正在安装 OpenClaw（首次安装约 80MB+，使用国内镜像加速）...\n"));
+    // 临时覆盖 git url rewrite（有些机器把 https://github.com 重写到 ssh）
+    let gitRewriteSet = false;
     try {
-      await runCommand("npm", ["install", "-g", "openclaw@latest", "--registry", "https://registry.npmmirror.com"]);
+      execSync("git config --global url.https://github.com/.insteadOf git@github.com:", { stdio: "ignore" });
+      gitRewriteSet = true;
+    } catch { /* ignore */ }
+
+    try {
+      await runCommand("npm", [
+        "install", "-g", "openclaw@latest",
+        "--registry", "https://registry.npmmirror.com",
+        "--git-protocol", "https",
+      ]);
       console.log(green("\n  ✓ OpenClaw 安装完成"));
     } catch {
       console.error(red("\n  ✗ OpenClaw 安装失败，请手动运行:"));
       console.error(gray("    npm install -g openclaw@latest --registry https://registry.npmmirror.com\n"));
       process.exit(1);
+    } finally {
+      // 还原 git 配置
+      if (gitRewriteSet) {
+        try { execSync("git config --global --unset url.https://github.com/.insteadOf", { stdio: "ignore" }); } catch { /* ignore */ }
+      }
     }
   }
 
