@@ -307,11 +307,19 @@ async function cmdSetup() {
             console.log(yellow("\n  ! 稍后可手动运行: openclaw models auth login --provider qwen-portal"));
           }
         }
-        defaultModel = "qwen-max";
-        newConfig = deepMerge(newConfig, { agents: { defaults: { model: "qwen-max", provider: "qwen-portal" } } });
+        defaultModel = "qwen-portal/qwen-max";
+        newConfig = deepMerge(newConfig, { agents: { defaults: { model: { primary: "qwen-portal/qwen-max" } } } });
       } else {
         const key = await ask("\n  请输入 DashScope API Key (sk-...): ");
-        if (key) { newEnv["DASHSCOPE_API_KEY"] = key; defaultModel = "qwen-plus"; newConfig = deepMerge(newConfig, { agents: { defaults: { model: "qwen-plus" } } }); console.log(green("  ✓ 已保存")); }
+        if (key) {
+          newEnv["DASHSCOPE_API_KEY"] = key;
+          defaultModel = "dashscope/qwen-plus";
+          newConfig = deepMerge(newConfig, {
+            models: { providers: { dashscope: { baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1", apiKey: key, api: "openai-completions", models: [{ id: "qwen-plus", name: "Qwen Plus", contextWindow: 128000, maxTokens: 8192 }] } } },
+            agents: { defaults: { model: { primary: "dashscope/qwen-plus" } } },
+          });
+          console.log(green("  ✓ 已保存"));
+        }
       }
     } else if (cnIdx === 1) {
       // MiniMax
@@ -329,11 +337,19 @@ async function cmdSetup() {
             console.log(yellow("\n  ! 稍后可手动运行: openclaw models auth login --provider minimax"));
           }
         }
-        defaultModel = "MiniMax-M2.1";
-        newConfig = deepMerge(newConfig, { agents: { defaults: { model: "MiniMax-M2.1", provider: "minimax" } } });
+        defaultModel = "minimax/MiniMax-M2.5";
+        newConfig = deepMerge(newConfig, { agents: { defaults: { model: { primary: "minimax/MiniMax-M2.5" } } } });
       } else {
         const key = await ask("\n  请输入 MiniMax API Key: ");
-        if (key) { newEnv["MINIMAX_API_KEY"] = key; defaultModel = "MiniMax-M2.1"; newConfig = deepMerge(newConfig, { agents: { defaults: { model: "MiniMax-M2.1" } } }); console.log(green("  ✓ 已保存")); }
+        if (key) {
+          newEnv["MINIMAX_API_KEY"] = key;
+          defaultModel = "minimax/MiniMax-M2.5";
+          newConfig = deepMerge(newConfig, {
+            models: { providers: { minimax: { baseUrl: "https://api.minimax.chat/v1", apiKey: key, api: "openai-completions", models: [{ id: "MiniMax-M2.5", name: "MiniMax M2.5", contextWindow: 200000, maxTokens: 16384 }] } } },
+            agents: { defaults: { model: { primary: "minimax/MiniMax-M2.5" } } },
+          });
+          console.log(green("  ✓ 已保存"));
+        }
       }
     } else if (cnIdx === 2) {
       // Doubao
@@ -344,15 +360,30 @@ async function cmdSetup() {
       ]);
       const modelMap = ["doubao-seed-1-8-251228", "glm-4-7-251222", "kimi-k2-5-260127"];
       const key = await ask("\n  请输入火山引擎 API Key (console.volcengine.com): ");
-      if (key) { newEnv["VOLC_ACCESSKEY"] = key; defaultModel = modelMap[modelIdx]; newConfig = deepMerge(newConfig, { agents: { defaults: { model: defaultModel } } }); console.log(green("  ✓ 已保存")); }
+      if (key) {
+        newEnv["VOLC_ACCESSKEY"] = key;
+        defaultModel = `volcengine/${modelMap[modelIdx]}`;
+        newConfig = deepMerge(newConfig, { agents: { defaults: { model: { primary: defaultModel } } } });
+        console.log(green("  ✓ 已保存"));
+      }
     } else if (cnIdx === 3) {
       // Kimi
       const key = await ask("\n  请输入 Moonshot API Key (platform.moonshot.ai): ");
-      if (key) { newEnv["MOONSHOT_API_KEY"] = key; defaultModel = "kimi-k2.5"; newConfig = deepMerge(newConfig, { agents: { defaults: { model: "kimi-k2.5" } } }); console.log(green("  ✓ 已保存")); }
+      if (key) {
+        newEnv["MOONSHOT_API_KEY"] = key;
+        defaultModel = "moonshot/moonshot-v1-8k";
+        newConfig = deepMerge(newConfig, { agents: { defaults: { model: { primary: defaultModel } } } });
+        console.log(green("  ✓ 已保存"));
+      }
     } else {
       // DeepSeek
       const key = await ask("\n  请输入 DeepSeek API Key (platform.deepseek.com): ");
-      if (key) { newEnv["DEEPSEEK_API_KEY"] = key; defaultModel = "deepseek-chat"; newConfig = deepMerge(newConfig, { agents: { defaults: { model: "deepseek-chat" } } }); console.log(green("  ✓ 已保存")); }
+      if (key) {
+        newEnv["DEEPSEEK_API_KEY"] = key;
+        defaultModel = "deepseek/deepseek-chat";
+        newConfig = deepMerge(newConfig, { agents: { defaults: { model: { primary: defaultModel } } } });
+        console.log(green("  ✓ 已保存"));
+      }
     }
 
   } else if (regionIdx === 1) {
@@ -362,13 +393,18 @@ async function cmdSetup() {
       { label: "OpenRouter", desc: "聚合多家，一个 Key — openrouter.ai" },
     ]);
     const cfgs = [
-      { env: "OPENAI_API_KEY",     model: "gpt-4o-mini",              prompt: "OpenAI API Key (sk-...)" },
-      { env: "ANTHROPIC_API_KEY",  model: "claude-3-5-haiku-latest",  prompt: "Anthropic API Key (sk-ant-...)" },
-      { env: "OPENROUTER_API_KEY", model: "openai/gpt-4o-mini",       prompt: "OpenRouter API Key (sk-or-...)" },
+      { env: "OPENAI_API_KEY",     model: "openai/gpt-4o-mini",             prompt: "OpenAI API Key (sk-...)" },
+      { env: "ANTHROPIC_API_KEY",  model: "anthropic/claude-3-5-haiku-latest", prompt: "Anthropic API Key (sk-ant-...)" },
+      { env: "OPENROUTER_API_KEY", model: "openrouter/openai/gpt-4o-mini",  prompt: "OpenRouter API Key (sk-or-...)" },
     ];
     const cfg = cfgs[intlIdx];
     const key = await ask(`\n  请输入 ${cfg.prompt}: `);
-    if (key) { newEnv[cfg.env] = key; defaultModel = cfg.model; newConfig = deepMerge(newConfig, { agents: { defaults: { model: defaultModel } } }); console.log(green("  ✓ 已保存")); }
+    if (key) {
+      newEnv[cfg.env] = key;
+      defaultModel = cfg.model;
+      newConfig = deepMerge(newConfig, { agents: { defaults: { model: { primary: defaultModel } } } });
+      console.log(green("  ✓ 已保存"));
+    }
   } else {
     console.log(yellow(`\n  已跳过，稍后手动编辑: ${gray(CONFIG_PATH)}`));
   }
