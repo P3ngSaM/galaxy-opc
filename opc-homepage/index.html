@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>星环 Galaxy OPC — 一人公司孵化与赋能平台</title>
+  <meta name="description" content="星环OPC中心：AI时代的一站式一人公司孵化与赋能平台。物理空间+数字系统+资金赋能三位一体，帮助创业者低成本启动和运营公司。" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary:   '#0F172A',
+            secondary: '#334155',
+            cta:       '#0369A1',
+            ctahover:  '#0284C7',
+            accent:    '#F59E0B',
+            bg:        '#F8FAFC',
+          },
+          fontFamily: {
+            sans: ['"Noto Sans SC"', '"IBM Plex Sans"', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+    html { scroll-behavior: smooth; }
+    .gradient-hero {
+      background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 60%, #0369A1 100%);
+    }
+    .gradient-cta {
+      background: linear-gradient(135deg, #0369A1 0%, #0F172A 100%);
+    }
+    .card-hover {
+      transition: transform 200ms ease, box-shadow 200ms ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(15,23,42,0.12);
+    }
+    .tab-active {
+      background: #0369A1;
+      color: #fff;
+    }
+    .flow-arrow::after {
+      content: '';
+      position: absolute;
+      right: -20px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 10px solid transparent;
+      border-left-color: #0369A1;
+    }
+    .stat-number {
+      background: linear-gradient(135deg, #0369A1, #F59E0B);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .section-divider {
+      height: 4px;
+      background: linear-gradient(90deg, #0369A1, #F59E0B, #0369A1);
+      opacity: 0.15;
+    }
+    /* Floating nav */
+    #navbar {
+      transition: background 300ms, box-shadow 300ms, backdrop-filter 300ms;
+    }
+    #navbar.scrolled {
+      background: rgba(15,23,42,0.95);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+    }
+    /* Audience tabs */
+    .audience-tab { transition: all 200ms; }
+    .audience-panel { display: none; }
+    .audience-panel.active { display: block; }
+    /* Timeline */
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -29px;
+      top: 4px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #0369A1;
+      border: 3px solid #F8FAFC;
+      box-shadow: 0 0 0 2px #0369A1;
+    }
+    /* Mobile menu */
+    #mobile-menu { transition: max-height 300ms ease, opacity 300ms ease; max-height: 0; opacity: 0; overflow: hidden; }
+    #mobile-menu.open { max-height: 600px; opacity: 1; }
+  </style>
+</head>
+<body class="bg-bg text-primary font-sans antialiased">
+
+  <!-- ═══════════════════════════════════════════════════════ NAV -->
+  <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <a href="#" class="flex items-center gap-2 cursor-pointer group">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cta to-accent flex items-center justify-center flex-shrink-0">
+            <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" fill="white"/>
+              <circle cx="12" cy="12" r="7" stroke="white" stroke-width="1.5" stroke-dasharray="4 2"/>
+              <circle cx="12" cy="12" r="11" stroke="white" stroke-width="1" opacity="0.4"/>
+            </svg>
+          </div>
+          <span class="text-white font-semibold text-lg tracking-tight">星环 <span class="text-accent">OPC</span></span>
+        </a>
+
+        <!-- Desktop nav -->
+        <div class="hidden md:flex items-center gap-6">
+          <a href="#solution" class="text-white/70 hover:text-white text-sm font-medium transition-colors duration-200 cursor-pointer">平台介绍</a>
+          <a href="#model" class="text-white/70 hover:text-white text-sm font-medium transition-colors duration-200 cursor-pointer">商业模式</a>
+          <a href="#audience" class="text-white/70 hover:text-white text-sm font-medium transition-colors duration-200 cursor-pointer">合作对象</a>
+          <a href="#roadmap" class="text-white/70 hover:text-white text-sm font-medium transition-colors duration-200 cursor-pointer">实施计划</a>
+          <a href="#contact" class="ml-2 bg-cta hover:bg-ctahover text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors duration-200 cursor-pointer">联系我们</a>
+        </div>
+
+        <!-- Mobile hamburger -->
+        <button id="menu-btn" class="md:hidden text-white p-2 rounded-lg hover:bg-white/10 transition-colors duration-200 cursor-pointer" aria-label="菜单" aria-expanded="false">
+          <svg id="menu-icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+          <svg id="menu-icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile menu -->
+      <div id="mobile-menu" role="navigation" aria-label="移动端菜单">
+        <div class="py-4 flex flex-col gap-2 border-t border-white/10">
+          <a href="#solution" class="text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 text-sm font-medium transition-colors duration-200 cursor-pointer mobile-link">平台介绍</a>
+          <a href="#model" class="text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 text-sm font-medium transition-colors duration-200 cursor-pointer mobile-link">商业模式</a>
+          <a href="#audience" class="text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 text-sm font-medium transition-colors duration-200 cursor-pointer mobile-link">合作对象</a>
+          <a href="#roadmap" class="text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 text-sm font-medium transition-colors duration-200 cursor-pointer mobile-link">实施计划</a>
+          <a href="#contact" class="bg-cta hover:bg-ctahover text-white px-3 py-2 rounded-lg text-sm font-semibold transition-colors duration-200 cursor-pointer mobile-link text-center mt-2">联系我们</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════ HERO -->
+  <section class="gradient-hero min-h-screen flex items-center pt-16 px-4 sm:px-6 lg:px-8" aria-labelledby="hero-heading">
+    <div class="max-w-7xl mx-auto w-full py-20 lg:py-28">
+      <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <!-- Left: Text -->
+        <div>
+          <div class="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-6">
+            <div class="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
+            <span class="text-white/90 text-xs font-medium tracking-wide">AI 时代 · 一人公司孵化平台</span>
+          </div>
+          <h1 id="hero-heading" class="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
+            让每个个体<br/>
+            <span class="text-accent">拥有大企业</span><br/>
+            的运营能力
+          </h1>
+          <p class="text-white/70 text-lg leading-relaxed mb-8 max-w-lg">
+            星环OPC中心 — 物理空间 + AI数字系统 + 资金赋能三位一体，帮助创业者低成本、高效率地启动和运营自己的公司。
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <a href="#solution" class="bg-cta hover:bg-ctahover text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-200 cursor-pointer flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+              了解平台
+            </a>
+            <a href="#contact" class="bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-200 cursor-pointer">
+              联系合作
+            </a>
+          </div>
+          <!-- Quick stats -->
+          <div class="grid grid-cols-3 gap-4 mt-12 pt-10 border-t border-white/10">
+            <div>
+              <div class="text-3xl font-bold text-accent">100+</div>
+              <div class="text-white/60 text-xs mt-1">首年孵化一人公司</div>
+            </div>
+            <div>
+              <div class="text-3xl font-bold text-accent">500万</div>
+              <div class="text-white/60 text-xs mt-1">首期投入规模</div>
+            </div>
+            <div>
+              <div class="text-3xl font-bold text-accent">5000万+</div>
+              <div class="text-white/60 text-xs mt-1">年助城投科创贷</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Visual card -->
+        <div class="hidden lg:block">
+          <div class="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-white/60 text-sm font-medium">CKS AI 员工系统</span>
+              <span class="bg-green-500/20 text-green-400 text-xs px-2 py-0.5 rounded-full font-medium">运行中</span>
+            </div>
+            <!-- AI roles -->
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3 cursor-pointer hover:bg-white/10 transition-colors duration-200" role="listitem">
+                <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                  </svg>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-white text-sm font-medium">AI 行政</div>
+                  <div class="text-white/50 text-xs truncate">日程管理、文档处理、会议安排</div>
+                </div>
+                <div class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0 ml-auto"></div>
+              </div>
+              <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3 cursor-pointer hover:bg-white/10 transition-colors duration-200" role="listitem">
+                <div class="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-white text-sm font-medium">AI 财务</div>
+                  <div class="text-white/50 text-xs truncate">记账报税、成本分析、资金规划</div>
+                </div>
+                <div class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0 ml-auto"></div>
+              </div>
+              <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3 cursor-pointer hover:bg-white/10 transition-colors duration-200" role="listitem">
+                <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+                  </svg>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-white text-sm font-medium">AI 法务</div>
+                  <div class="text-white/50 text-xs truncate">合同审核、风险评估、知识产权</div>
+                </div>
+                <div class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0 ml-auto"></div>
+              </div>
+              <div class="flex items-center gap-3 bg-white/5 rounded-xl p-3 cursor-pointer hover:bg-white/10 transition-colors duration-200" role="listitem">
+                <div class="w-10 h-10 rounded-lg bg-rose-500/20 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-white text-sm font-medium">AI 人事</div>
+                  <div class="text-white/50 text-xs truncate">招聘辅助、绩效考核、培训管理</div>
+                </div>
+                <div class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0 ml-auto"></div>
+              </div>
+            </div>
+            <div class="pt-3 border-t border-white/10">
+              <div class="flex items-center justify-between text-xs text-white/40">
+                <span>创业者专注业务，AI处理运营</span>
+                <span class="text-green-400 font-medium">4/4 在线</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ PROBLEM / TRENDS -->
+  <section class="py-20 px-4 sm:px-6 lg:px-8 bg-white" aria-labelledby="trends-heading">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-14">
+        <div class="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-full px-4 py-1.5 mb-4">
+          <span class="text-cta text-xs font-semibold tracking-wide uppercase">宏观背景</span>
+        </div>
+        <h2 id="trends-heading" class="text-3xl sm:text-4xl font-bold text-primary mb-4">AI时代的三大结构性机遇</h2>
+        <p class="text-secondary text-lg max-w-2xl mx-auto leading-relaxed">AI普及正在重塑劳动力市场，三大趋势叠加，创造了一人公司模式的历史性窗口。</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Trend 1 -->
+        <div class="bg-bg border border-gray-100 rounded-2xl p-7 card-hover cursor-pointer group">
+          <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center mb-5 group-hover:bg-blue-100 transition-colors duration-200">
+            <svg class="w-6 h-6 text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+          <div class="text-xs font-semibold text-cta uppercase tracking-wide mb-2">趋势一</div>
+          <h3 class="text-xl font-bold text-primary mb-3">城市白领失业潮与回流</h3>
+          <p class="text-secondary text-sm leading-relaxed">AI替代重复性脑力劳动，大量城市白领面临转型压力，产生明显的回流趋势——契合乡村振兴，下沉三四线城市。</p>
+        </div>
+
+        <!-- Trend 2 -->
+        <div class="bg-bg border border-gray-100 rounded-2xl p-7 card-hover cursor-pointer group">
+          <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center mb-5 group-hover:bg-amber-100 transition-colors duration-200">
+            <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+            </svg>
+          </div>
+          <div class="text-xs font-semibold text-accent uppercase tracking-wide mb-2">趋势二</div>
+          <h3 class="text-xl font-bold text-primary mb-3">高校毕业生就业压力</h3>
+          <p class="text-secondary text-sm leading-relaxed">2026年大学毕业生人数庞大，传统岗位供给不足。OPC模式为高校毕业生提供低门槛、高灵活性的创业就业新路径。</p>
+        </div>
+
+        <!-- Trend 3 -->
+        <div class="bg-bg border border-gray-100 rounded-2xl p-7 card-hover cursor-pointer group">
+          <div class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center mb-5 group-hover:bg-green-100 transition-colors duration-200">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <div class="text-xs font-semibold text-green-600 uppercase tracking-wide mb-2">趋势三</div>
+          <h3 class="text-xl font-bold text-primary mb-3">AI产业爆发与数字化转型</h3>
+          <p class="text-secondary text-sm leading-relaxed">国务院《AI+行动》：2030年AI普及率达90%。地方数字经济转型创造大量AI开发场景，为创业者提供中转机遇。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ═══════════════════════════════════════════════════════ SOLUTION / CKS -->
+  <section id="solution" class="py-20 px-4 sm:px-6 lg:px-8 bg-bg" aria-labelledby="solution-heading">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-14">
+        <div class="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-full px-4 py-1.5 mb-4">
+          <span class="text-cta text-xs font-semibold tracking-wide uppercase">核心产品</span>
+        </div>
+        <h2 id="solution-heading" class="text-3xl sm:text-4xl font-bold text-primary mb-4">三位一体赋能体系</h2>
+        <p class="text-secondary text-lg max-w-2xl mx-auto leading-relaxed">物理空间 + CKS数字系统 + 资金赋能，让每个人都能以极低成本运营一家公司。</p>
+      </div>
+
+      <div class="grid lg:grid-cols-3 gap-6 mb-16">
+        <!-- Pillar 1 -->
+        <div class="bg-white border border-gray-100 rounded-2xl p-8 card-hover cursor-pointer">
+          <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-6">
+            <svg class="w-7 h-7 text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-primary mb-3">物理空间</h3>
+          <p class="text-secondary text-sm leading-relaxed mb-4">500-1000㎡共享办公空间，含独立会议室、路演厅、24小时无人超市、潮酒馆、健身房等青年社交配套设施。</p>
+          <ul class="space-y-2 text-sm text-secondary">
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-cta flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              共享工位 · 独立会议室
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-cta flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              路演厅 · 会客室
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-cta flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              青年社交配套设施
+            </li>
+          </ul>
+        </div>
+
+        <!-- Pillar 2 -->
+        <div class="bg-primary rounded-2xl p-8 card-hover cursor-pointer relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-6">
+            <svg class="w-7 h-7 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/>
+            </svg>
+          </div>
+          <div class="text-accent text-xs font-semibold uppercase tracking-wide mb-1">核心产品</div>
+          <h3 class="text-xl font-bold text-white mb-3">CKS 人机协作系统</h3>
+          <p class="text-white/60 text-sm leading-relaxed mb-4">自主研发的AI员工系统，配置行政、HR、财务、法务四大AI岗位，让创业者专注核心业务，运营交给AI。</p>
+          <ul class="space-y-2 text-sm text-white/70">
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              一键完成工商注册、银行开户
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              按需激活 AI 岗位
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              数据监控与风险评估
+            </li>
+          </ul>
+        </div>
+
+        <!-- Pillar 3 -->
+        <div class="bg-white border border-gray-100 rounded-2xl p-8 card-hover cursor-pointer">
+          <div class="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mb-6">
+            <svg class="w-7 h-7 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-primary mb-3">资金赋能</h3>
+          <p class="text-secondary text-sm leading-relaxed mb-4">以参股形式投资有潜力的创业者，提供5-50万元种子资金，对接人脉资源与持续融资支持。</p>
+          <ul class="space-y-2 text-sm text-secondary">
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              5-50万元/人种子投资
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              人脉资源对接
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              持续融资与退出支持
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- CKS Steps -->
+      <div class="bg-white border border-gray-100 rounded-2xl p-8">
+        <h3 class="text-xl font-bold text-primary mb-6 text-center">创业者三步启动</h3>
+        <div class="grid md:grid-cols-3 gap-4">
+          <div class="flex items-start gap-4 p-4 rounded-xl bg-bg">
+            <div class="w-10 h-10 rounded-xl bg-cta text-white font-bold text-lg flex items-center justify-center flex-shrink-0">1</div>
+            <div>
+              <div class="font-semibold text-primary mb-1">注册公司</div>
+              <div class="text-secondary text-sm">通过CKS系统一键完成工商注册、银行开户、税务登记</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-4 p-4 rounded-xl bg-bg">
+            <div class="w-10 h-10 rounded-xl bg-cta text-white font-bold text-lg flex items-center justify-center flex-shrink-0">2</div>
+            <div>
+              <div class="font-semibold text-primary mb-1">配置AI员工</div>
+              <div class="text-secondary text-sm">根据业务需要激活行政、财务、法务、HR等AI岗位</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-4 p-4 rounded-xl bg-bg">
+            <div class="w-10 h-10 rounded-xl bg-accent text-white font-bold text-lg flex items-center justify-center flex-shrink-0">3</div>
+            <div>
+              <div class="font-semibold text-primary mb-1">专注业务</div>
+              <div class="text-secondary text-sm">所有运营事务由AI处理，创业者只需聚焦客户、服务和收益</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ═══════════════════════════════════════════════════════ BUSINESS MODEL -->
+  <section id="model" class="py-20 px-4 sm:px-6 lg:px-8 bg-white" aria-labelledby="model-heading">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-14">
+        <div class="inline-flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-full px-4 py-1.5 mb-4">
+          <span class="text-amber-600 text-xs font-semibold tracking-wide uppercase">商业模式</span>
+        </div>
+        <h2 id="model-heading" class="text-3xl sm:text-4xl font-bold text-primary mb-4">投资—服务—退出闭环</h2>
+        <p class="text-secondary text-lg max-w-2xl mx-auto leading-relaxed">创新的资金闭环模式，确保资金安全、风险可控、多方共赢。</p>
+      </div>
+
+      <!-- Flow Diagram -->
+      <div class="bg-bg border border-gray-100 rounded-2xl p-8 mb-10">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 items-center">
+          <div class="bg-primary rounded-xl p-4 text-center text-white">
+            <div class="text-2xl font-bold text-accent mb-1">①</div>
+            <div class="font-semibold text-sm">星河数科</div>
+            <div class="text-white/60 text-xs mt-1">投资参股</div>
+          </div>
+          <div class="flex justify-center">
+            <svg class="w-6 h-6 text-cta hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+          </div>
+          <div class="bg-cta rounded-xl p-4 text-center text-white">
+            <div class="text-2xl font-bold mb-1">②</div>
+            <div class="font-semibold text-sm">一人公司</div>
+            <div class="text-white/70 text-xs mt-1">服务采购 / 资金回流</div>
+          </div>
+          <div class="flex justify-center">
+            <svg class="w-6 h-6 text-cta hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+          </div>
+          <div class="bg-amber-500 rounded-xl p-4 text-center text-white">
+            <div class="text-2xl font-bold mb-1">③</div>
+            <div class="font-semibold text-sm">城投公司</div>
+            <div class="text-white/80 text-xs mt-1">资产包 / 科创贷</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 mechanisms -->
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-bg border border-gray-100 rounded-2xl p-6 card-hover cursor-pointer">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="font-bold text-primary mb-2">① 投资参股 + 服务采购</h4>
+              <p class="text-secondary text-sm leading-relaxed">以参股形式投资创业者，一人公司反向采购CKS系统、财务、法务等服务，投入资金以服务费形式逐步回流，形成稳定现金流。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-bg border border-gray-100 rounded-2xl p-6 card-hover cursor-pointer">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="font-bold text-primary mb-2">② 风险对冲：亏损税务优化</h4>
+              <p class="text-secondary text-sm leading-relaxed">若一人公司经营不善，按协议收并购。亏损抵扣星河科技应纳税所得额，实现税务优化，有效降低整体税负。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-bg border border-gray-100 rounded-2xl p-6 card-hover cursor-pointer">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="font-bold text-primary mb-2">③ 资产打包转让城投</h4>
+              <p class="text-secondary text-sm leading-relaxed">整合亏损公司形成具有真实运营数据和科创属性的"资产包"，转让给城投公司，助力其获取低息科创贷，收取融资服务费。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-bg border border-gray-100 rounded-2xl p-6 card-hover cursor-pointer">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="font-bold text-primary mb-2">④ 赋能城投产业化转型</h4>
+              <p class="text-secondary text-sm leading-relaxed">为城投公司提供科创资产 + 低成本融资渠道 + 人才储备库，助力产业化转型，预计年助力获取科创贷5000万元以上。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ═══════════════════════════════════════════════════════ AUDIENCE TABS -->
+  <section id="audience" class="py-20 px-4 sm:px-6 lg:px-8 bg-bg" aria-labelledby="audience-heading">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-12">
+        <div class="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-full px-4 py-1.5 mb-4">
+          <span class="text-cta text-xs font-semibold tracking-wide uppercase">合作对象</span>
+        </div>
+        <h2 id="audience-heading" class="text-3xl sm:text-4xl font-bold text-primary mb-4">我们服务的五类伙伴</h2>
+        <p class="text-secondary text-lg max-w-2xl mx-auto">不同角色，不同价值，同一个生态。</p>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="flex flex-wrap gap-2 justify-center mb-8" role="tablist" aria-label="合作对象">
+        <button class="audience-tab tab-active px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer border border-transparent transition-all duration-200" data-tab="entrepreneur" role="tab" aria-selected="true" aria-controls="panel-entrepreneur">
+          个人创业者
+        </button>
+        <button class="audience-tab bg-white border border-gray-200 text-secondary hover:border-cta hover:text-cta px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200" data-tab="government" role="tab" aria-selected="false" aria-controls="panel-government">
+          政府决策者
+        </button>
+        <button class="audience-tab bg-white border border-gray-200 text-secondary hover:border-cta hover:text-cta px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200" data-tab="acquirer" role="tab" aria-selected="false" aria-controls="panel-acquirer">
+          产业收购方
+        </button>
+        <button class="audience-tab bg-white border border-gray-200 text-secondary hover:border-cta hover:text-cta px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200" data-tab="investor" role="tab" aria-selected="false" aria-controls="panel-investor">
+          投资人
+        </button>
+        <button class="audience-tab bg-white border border-gray-200 text-secondary hover:border-cta hover:text-cta px-4 py-2 rounded-xl text-sm font-semibold cursor-pointer transition-all duration-200" data-tab="franchise" role="tab" aria-selected="false" aria-controls="panel-franchise">
+          运营加盟商
+        </button>
+      </div>
+
+      <!-- Panels -->
+      <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden">
+
+        <!-- 1. Entrepreneur -->
+        <div id="panel-entrepreneur" class="audience-panel active p-8" role="tabpanel" aria-labelledby="">
+          <div class="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <div class="inline-flex items-center gap-2 bg-blue-50 rounded-full px-3 py-1 mb-4">
+                <svg class="w-4 h-4 text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span class="text-cta text-xs font-semibold">个人创业者</span>
+              </div>
+              <h3 class="text-2xl font-bold text-primary mb-3">你只需专注最重要的事</h3>
+              <p class="text-secondary leading-relaxed mb-5">无论你是返乡人才、应届毕业生，还是想创业的职场人，OPC为你提供完整的起跑资源：AI员工处理繁琐运营，让你把时间全部投入业务本身。</p>
+              <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">零门槛启动</div>
+                    <div class="text-secondary text-sm">无需先行垫付，5-50万元种子资金支持</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">AI全岗位覆盖</div>
+                    <div class="text-secondary text-sm">行政、财务、法务、HR全部由AI代劳</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">人脉与资源对接</div>
+                    <div class="text-secondary text-sm">连接投资人、金融机构、产业资源网络</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="bg-bg rounded-2xl p-6 space-y-4">
+              <div class="text-sm font-semibold text-secondary mb-3">你能获得什么</div>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white rounded-xl p-4 text-center border border-gray-100">
+                  <div class="text-2xl font-bold stat-number">5-50万</div>
+                  <div class="text-xs text-secondary mt-1">种子投资</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 text-center border border-gray-100">
+                  <div class="text-2xl font-bold stat-number">4个</div>
+                  <div class="text-xs text-secondary mt-1">AI岗位</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 text-center border border-gray-100">
+                  <div class="text-2xl font-bold stat-number">1键</div>
+                  <div class="text-xs text-secondary mt-1">注册公司</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 text-center border border-gray-100">
+                  <div class="text-2xl font-bold stat-number">0负担</div>
+                  <div class="text-xs text-secondary mt-1">行政运营</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Government -->
+        <div id="panel-government" class="audience-panel p-8" role="tabpanel">
+          <div class="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <div class="inline-flex items-center gap-2 bg-green-50 rounded-full px-3 py-1 mb-4">
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
+                </svg>
+                <span class="text-green-700 text-xs font-semibold">政府决策者</span>
+              </div>
+              <h3 class="text-2xl font-bold text-primary mb-3">财政零负担，多重社会效益</h3>
+              <p class="text-secondary leading-relaxed mb-5">我们不要财政补贴，只需政府提供闲置场地和审批绿色通道。引进OPC中心，即可撬动就业、人才回流、数字经济三重效益，助力城投融资。</p>
+              <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">财政零负担</div>
+                    <div class="text-secondary text-sm">星河数科全额自筹500万元，仅需场地支持</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">首年100+就业岗位</div>
+                    <div class="text-secondary text-sm">孵化100+一人公司，产值达2000万元以上</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">城投融资赋能</div>
+                    <div class="text-secondary text-sm">预计每年助力城投公司获取科创贷5000万+</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="bg-bg rounded-2xl p-6">
+              <div class="text-sm font-semibold text-secondary mb-4">政府仅需提供</div>
+              <div class="space-y-3">
+                <div class="bg-white rounded-xl p-4 border border-gray-100 flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-cta" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">500-1000㎡闲置场地</div>
+                    <div class="text-secondary text-xs">办公楼或开放性厂房，优先靠近年轻人聚集地</div>
+                  </div>
+                </div>
+                <div class="bg-white rounded-xl p-4 border border-gray-100 flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">注册审批绿色通道</div>
+                    <div class="text-secondary text-xs">工商注册、税务办理、科创企业认定一站式</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Acquirer -->
+        <div id="panel-acquirer" class="audience-panel p-8" role="tabpanel">
+          <div class="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <div class="inline-flex items-center gap-2 bg-purple-50 rounded-full px-3 py-1 mb-4">
+                <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+                <span class="text-purple-700 text-xs font-semibold">城投 · 上市公司 · 大型民企</span>
+              </div>
+              <h3 class="text-2xl font-bold text-primary mb-3">低成本获取科创资产与融资能力</h3>
+              <p class="text-secondary leading-relaxed mb-5">OPC中心为城投公司和产业资本提供真实运营数据的科创资产包，作为申请政策性低息科创贷的核心抓手，同时获取数字经济人才储备。</p>
+              <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">科创资产获取</div>
+                    <div class="text-secondary text-sm">具有真实业务流水的科创企业资产包</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">低息科创贷申请</div>
+                    <div class="text-secondary text-sm">政府背书的政策性低利率融资渠道</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">数字人才储备</div>
+                    <div class="text-secondary text-sm">间接储备数字经济人才，助力产业转型</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="bg-bg rounded-2xl p-6">
+              <div class="text-sm font-semibold text-secondary mb-4">对城投公司的核心价值</div>
+              <div class="space-y-4">
+                <div class="flex items-center gap-4 bg-white rounded-xl p-4 border border-gray-100">
+                  <div class="text-2xl font-bold stat-number">5000万+</div>
+                  <div class="text-secondary text-sm">年助力科创贷规模</div>
+                </div>
+                <div class="flex items-center gap-4 bg-white rounded-xl p-4 border border-gray-100">
+                  <div class="text-2xl font-bold stat-number">真实</div>
+                  <div class="text-secondary text-sm">业务流水 + 科创属性资产</div>
+                </div>
+                <div class="flex items-center gap-4 bg-white rounded-xl p-4 border border-gray-100">
+                  <div class="text-2xl font-bold stat-number">低息</div>
+                  <div class="text-secondary text-sm">政策优惠科创贷利率</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Investor -->
+        <div id="panel-investor" class="audience-panel p-8" role="tabpanel">
+          <div class="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <div class="inline-flex items-center gap-2 bg-amber-50 rounded-full px-3 py-1 mb-4">
+                <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="text-amber-700 text-xs font-semibold">星环领投 · 个人 · 机构</span>
+              </div>
+              <h3 class="text-2xl font-bold text-primary mb-3">多重安全垫的分散化投资组合</h3>
+              <p class="text-secondary leading-relaxed mb-5">OPC不是单一项目押注，而是批量孵化的分散投资组合。风险对冲机制、税务优化、资产退出通道多重保障，适合星环领投人、个人投资者及机构。</p>
+              <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">分散化风险</div>
+                    <div class="text-secondary text-sm">100+一人公司组合，单项目损失可控</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">多重退出通道</div>
+                    <div class="text-secondary text-sm">服务费回流 + 亏损抵税 + 资产包城投退出</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">政策红利加持</div>
+                    <div class="text-secondary text-sm">深度绑定乡村振兴、AI+、科创扶持政策</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="bg-bg rounded-2xl p-6">
+              <div class="text-sm font-semibold text-secondary mb-4">投资结构</div>
+              <div class="space-y-3">
+                <div class="bg-white rounded-xl p-4 border border-gray-100">
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm font-semibold text-primary">星环领投（战略投资人）</span>
+                    <span class="text-xs text-cta font-medium bg-blue-50 px-2 py-0.5 rounded-full">主导</span>
+                  </div>
+                  <div class="text-secondary text-xs">负责平台战略与资源整合，享受最优先退出权</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 border border-gray-100">
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm font-semibold text-primary">个人投资者</span>
+                    <span class="text-xs text-amber-600 font-medium bg-amber-50 px-2 py-0.5 rounded-full">跟投</span>
+                  </div>
+                  <div class="text-secondary text-xs">按比例参投孵化基金，分享组合收益</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 border border-gray-100">
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm font-semibold text-primary">机构投资人</span>
+                    <span class="text-xs text-purple-600 font-medium bg-purple-50 px-2 py-0.5 rounded-full">战略</span>
+                  </div>
+                  <div class="text-secondary text-xs">大额参投，享受融资服务费分成及科创贷收益</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Franchise -->
+        <div id="panel-franchise" class="audience-panel p-8" role="tabpanel">
+          <div class="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <div class="inline-flex items-center gap-2 bg-rose-50 rounded-full px-3 py-1 mb-4">
+                <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="text-rose-700 text-xs font-semibold">洛阳OPC · 盐城OPC · 全国扩张</span>
+              </div>
+              <h3 class="text-2xl font-bold text-primary mb-3">复制成熟模型，快速落地本地</h3>
+              <p class="text-secondary leading-relaxed mb-5">OPC中心采用标准化模型，运营加盟商获得完整的CKS系统授权、品牌支持、招募培训和总部资源对接，快速复制星环OPC在本地落地运营。</p>
+              <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">CKS系统授权</div>
+                    <div class="text-secondary text-sm">获得完整的AI员工系统部署权限</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">星环品牌 + 总部支持</div>
+                    <div class="text-secondary text-sm">招募培训、投资资源、政府对接全程跟进</div>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3">
+                  <div class="w-6 h-6 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  </div>
+                  <div>
+                    <div class="font-semibold text-primary text-sm">资金闭环共享</div>
+                    <div class="text-secondary text-sm">城投资产包和科创贷收益模型同步开放</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="bg-bg rounded-2xl p-6">
+              <div class="text-sm font-semibold text-secondary mb-4">已确认加盟城市</div>
+              <div class="space-y-3">
+                <div class="bg-white rounded-xl p-4 border border-gray-100 flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="font-bold text-primary">洛阳 OPC 中心</div>
+                    <div class="text-secondary text-xs">河南洛阳 · 洽谈中</div>
+                  </div>
+                  <div class="ml-auto text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">洽谈中</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 border border-gray-100 flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="font-bold text-primary">盐城 OPC 中心</div>
+                    <div class="text-secondary text-xs">江苏盐城 · 洽谈中</div>
+                  </div>
+                  <div class="ml-auto text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">洽谈中</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 border border-gray-100 flex items-center gap-4 opacity-60">
+                  <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="font-bold text-secondary">你的城市</div>
+                    <div class="text-gray-400 text-xs">欢迎洽谈加盟合作</div>
+                  </div>
+                  <a href="#contact" class="ml-auto text-xs font-medium text-cta bg-blue-50 px-2 py-0.5 rounded-full cursor-pointer hover:bg-blue-100 transition-colors duration-200">联系我们</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ═══════════════════════════════════════════════════════ ROADMAP -->
+  <section id="roadmap" class="py-20 px-4 sm:px-6 lg:px-8 bg-white" aria-labelledby="roadmap-heading">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-14">
+        <div class="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-full px-4 py-1.5 mb-4">
+          <span class="text-cta text-xs font-semibold tracking-wide uppercase">实施计划</span>
+        </div>
+        <h2 id="roadmap-heading" class="text-3xl sm:text-4xl font-bold text-primary mb-4">从签约到规模化</h2>
+        <p class="text-secondary text-lg max-w-xl mx-auto">清晰的四阶段推进路径，2026年Q1启动，2027年实现规模化复制。</p>
+      </div>
+
+      <div class="relative">
+        <!-- Vertical line -->
+        <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-cta via-cta to-gray-200 ml-1"></div>
+
+        <div class="space-y-8">
+          <!-- Phase 1 -->
+          <div class="relative pl-16">
+            <div class="timeline-item">
+              <div class="bg-bg border border-gray-100 rounded-2xl p-6 card-hover cursor-pointer">
+                <div class="flex flex-wrap items-center gap-3 mb-3">
+                  <span class="bg-cta text-white text-xs font-bold px-3 py-1 rounded-full">筹备期</span>
+                  <span class="text-secondary text-sm">2026年 Q1</span>
+                </div>
+                <h3 class="text-lg font-bold text-primary mb-2">签约落地 · 场地装修 · 设备安装</h3>
+                <p class="text-secondary text-sm">完成政府合作协议签署，启动场地改造和CKS系统部署，组建运营团队。</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 2 -->
+          <div class="relative pl-16">
+            <div class="timeline-item">
+              <div class="bg-bg border border-gray-100 rounded-2xl p-6 card-hover cursor-pointer">
+                <div class="flex flex-wrap items-center gap-3 mb-3">
+                  <span class="bg-cta text-white text-xs font-bold px-3 py-1 rounded-full">启动期</span>
+                  <span class="text-secondary text-sm">2026年 Q2</span>
+                </div>
+                <h3 class="text-lg font-bold text-primary mb-2">首批30人 · CKS试运营</h3>
+                <p class="text-secondary text-sm">招募首批30名创业者，完成工商注册、AI员工配置，CKS系统进入试运营阶段，验证商业模型。</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 3 -->
+          <div class="relative pl-16">
+            <div class="timeline-item">
+              <div class="bg-bg border border-gray-100 rounded-2xl p-6 card-hover cursor-pointer">
+                <div class="flex flex-wrap items-center gap-3 mb-3">
+                  <span class="bg-accent text-white text-xs font-bold px-3 py-1 rounded-full">扩展期</span>
+                  <span class="text-secondary text-sm">2026年 Q3 - Q4</span>
+                </div>
+                <h3 class="text-lg font-bold text-primary mb-2">扩大至100人 · 首批资产包转让</h3>
+                <p class="text-secondary text-sm">规模扩张至100家一人公司，完成首批科创资产包整合，实现向城投公司的首笔资产转让，打通资金闭环。</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phase 4 -->
+          <div class="relative pl-16">
+            <div class="timeline-item">
+              <div class="bg-bg border border-gray-100 rounded-2xl p-6 card-hover cursor-pointer">
+                <div class="flex flex-wrap items-center gap-3 mb-3">
+                  <span class="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">成熟期</span>
+                  <span class="text-secondary text-sm">2027年起</span>
+                </div>
+                <h3 class="text-lg font-bold text-primary mb-2">规模化运营 · 全国复制推广</h3>
+                <p class="text-secondary text-sm">完善运营体系，向洛阳、盐城等城市输出标准化模型，实现品牌化连锁扩张，建立全国OPC生态网络。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- ═══════════════════════════════════════════════════════ ABOUT -->
+  <section class="py-20 px-4 sm:px-6 lg:px-8 bg-bg" aria-labelledby="about-heading">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-full px-4 py-1.5 mb-4">
+            <span class="text-cta text-xs font-semibold tracking-wide uppercase">关于我们</span>
+          </div>
+          <h2 id="about-heading" class="text-3xl sm:text-4xl font-bold text-primary mb-5">四川星河长明数字科技</h2>
+          <p class="text-secondary text-lg leading-relaxed mb-6">专注于数字经济与产业赋能的创新型企业。秉承"科技赋能个体，创新驱动未来"的理念，致力于为AI时代的就业变革提供系统性解决方案。</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white border border-gray-100 rounded-xl p-4">
+              <div class="text-xs font-semibold text-cta uppercase tracking-wide mb-1">技术研发</div>
+              <div class="text-secondary text-sm">自主研发CKS人机协作系统，完整AI员工技术栈</div>
+            </div>
+            <div class="bg-white border border-gray-100 rounded-xl p-4">
+              <div class="text-xs font-semibold text-accent uppercase tracking-wide mb-1">资金实力</div>
+              <div class="text-secondary text-sm">首期投入500万元，具备持续孵化能力</div>
+            </div>
+            <div class="bg-white border border-gray-100 rounded-xl p-4">
+              <div class="text-xs font-semibold text-green-600 uppercase tracking-wide mb-1">资源整合</div>
+              <div class="text-secondary text-sm">连接投资人、金融机构、产业资源，形成赋能闭环</div>
+            </div>
+            <div class="bg-white border border-gray-100 rounded-xl p-4">
+              <div class="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-1">合规运营</div>
+              <div class="text-secondary text-sm">专业法务团队全程介入，所有环节合法合规</div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-primary rounded-2xl p-8 text-white">
+          <h3 class="text-xl font-bold mb-6">预期社会效益</h3>
+          <div class="space-y-5">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="font-semibold mb-1">就业岗位创造</div>
+                <div class="text-white/60 text-sm">首年孵化100+一人公司，年产值2000万+，产生稳定税收贡献</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="font-semibold mb-1">人才回流激活</div>
+                <div class="text-white/60 text-sm">吸引一线城市人才回归家乡，激活区域数字经济创新活力</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+              </div>
+              <div>
+                <div class="font-semibold mb-1">可复制社会治理创新</div>
+                <div class="text-white/60 text-sm">探索AI时代就业新模式，为全国其他地区提供可复制的经验范本</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ CTA / CONTACT -->
+  <section id="contact" class="py-20 px-4 sm:px-6 lg:px-8 gradient-cta" aria-labelledby="contact-heading">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 id="contact-heading" class="text-3xl sm:text-4xl font-bold text-white mb-5">携手共建AI时代新经济</h2>
+      <p class="text-white/70 text-lg leading-relaxed mb-10 max-w-2xl mx-auto">无论你是创业者、政府官员、城投管理层、投资人，还是有意愿在本地运营OPC中心的合作方，欢迎与我们联系。</p>
+
+      <div class="grid sm:grid-cols-3 gap-4 mb-10">
+        <div class="bg-white/10 border border-white/20 rounded-2xl p-6 text-left cursor-pointer hover:bg-white/15 transition-colors duration-200">
+          <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+          </div>
+          <div class="font-semibold text-white mb-1">创业者入驻</div>
+          <div class="text-white/60 text-sm">申请成为首批孵化成员，获得AI员工系统+种子资金支持</div>
+        </div>
+        <div class="bg-white/10 border border-white/20 rounded-2xl p-6 text-left cursor-pointer hover:bg-white/15 transition-colors duration-200">
+          <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
+            </svg>
+          </div>
+          <div class="font-semibold text-white mb-1">政府/城投合作</div>
+          <div class="text-white/60 text-sm">探讨场地合作与科创资产赋能方案，财政零负担</div>
+        </div>
+        <div class="bg-white/10 border border-white/20 rounded-2xl p-6 text-left cursor-pointer hover:bg-white/15 transition-colors duration-200">
+          <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div class="font-semibold text-white mb-1">投资/加盟合作</div>
+          <div class="text-white/60 text-sm">了解投资结构与城市加盟方案，共享规模化红利</div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="mailto:contact@galaxy-opc.com" class="bg-white text-primary font-semibold px-8 py-3 rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+          发送邮件
+        </a>
+        <a href="https://github.com/P3ngSaM/galaxy-opc" target="_blank" rel="noopener noreferrer" class="bg-white/10 border border-white/30 text-white font-semibold px-8 py-3 rounded-xl hover:bg-white/20 transition-colors duration-200 cursor-pointer flex items-center gap-2">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+          开源代码
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ FOOTER -->
+  <footer class="bg-primary py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-cta to-accent flex items-center justify-center">
+            <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" fill="white"/>
+              <circle cx="12" cy="12" r="7" stroke="white" stroke-width="1.5" stroke-dasharray="4 2"/>
+            </svg>
+          </div>
+          <span class="text-white/80 text-sm font-medium">星环 Galaxy OPC</span>
+          <span class="text-white/30 text-xs mx-2">·</span>
+          <span class="text-white/40 text-xs">四川星河长明数字科技有限责任公司</span>
+        </div>
+        <div class="flex items-center gap-6 text-white/40 text-xs">
+          <a href="#solution" class="hover:text-white/70 transition-colors duration-200 cursor-pointer">平台介绍</a>
+          <a href="#model" class="hover:text-white/70 transition-colors duration-200 cursor-pointer">商业模式</a>
+          <a href="https://github.com/P3ngSaM/galaxy-opc" target="_blank" rel="noopener noreferrer" class="hover:text-white/70 transition-colors duration-200 cursor-pointer">GitHub</a>
+          <span>© 2026 星河数科</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════════════ JS -->
+  <script>
+    // Navbar scroll effect
+    const navbar = document.getElementById('navbar');
+    // Init: force dark bg because hero is dark
+    navbar.classList.add('scrolled');
+
+    // Mobile menu
+    const menuBtn = document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const iconOpen = document.getElementById('menu-icon-open');
+    const iconClose = document.getElementById('menu-icon-close');
+    let menuOpen = false;
+
+    menuBtn.addEventListener('click', function() {
+      menuOpen = !menuOpen;
+      menuBtn.setAttribute('aria-expanded', menuOpen);
+      if (menuOpen) {
+        mobileMenu.classList.add('open');
+        iconOpen.classList.add('hidden');
+        iconClose.classList.remove('hidden');
+      } else {
+        mobileMenu.classList.remove('open');
+        iconOpen.classList.remove('hidden');
+        iconClose.classList.add('hidden');
+      }
+    });
+
+    // Close mobile menu when link clicked
+    document.querySelectorAll('.mobile-link').forEach(function(link) {
+      link.addEventListener('click', function() {
+        menuOpen = false;
+        menuBtn.setAttribute('aria-expanded', 'false');
+        mobileMenu.classList.remove('open');
+        iconOpen.classList.remove('hidden');
+        iconClose.classList.add('hidden');
+      });
+    });
+
+    // Audience tabs
+    const tabs = document.querySelectorAll('.audience-tab');
+    const panels = document.querySelectorAll('.audience-panel');
+
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        const target = tab.getAttribute('data-tab');
+
+        tabs.forEach(function(t) {
+          t.classList.remove('tab-active');
+          t.classList.add('bg-white', 'border', 'border-gray-200', 'text-secondary', 'hover:border-cta', 'hover:text-cta');
+          t.setAttribute('aria-selected', 'false');
+        });
+
+        tab.classList.add('tab-active');
+        tab.classList.remove('bg-white', 'border-gray-200', 'text-secondary');
+        tab.setAttribute('aria-selected', 'true');
+
+        panels.forEach(function(p) { p.classList.remove('active'); });
+        var panel = document.getElementById('panel-' + target);
+        if (panel) panel.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
