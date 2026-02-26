@@ -234,6 +234,7 @@
     @media (max-width: 600px) {
       .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
       .section { padding: 64px 0; }
+      .opb-growth-grid, .model-why-grid { grid-template-columns: 1fr !important; }
     }
 
     /* ── Navbar ── */
@@ -732,6 +733,7 @@
       <nav class="nav-links">
         <a href="#plugin">平台介绍</a>
         <a href="#solution">解决方案</a>
+        <a href="#opb-theory">OPB理论</a>
         <a href="#model">商业模式</a>
         <a href="#audience">服务对象</a>
         <a href="#roadmap">发展路径</a>
@@ -811,11 +813,16 @@
             无需改动任何核心代码。
           </p>
           <div class="code-block">
-            <div><span class="cmt"># 一键安装 galaxy-opc</span></div>
+            <div><span class="cmt"># 第 1 步：安装 OpenClaw（AI 对话平台）</span></div>
+            <div><span class="cmd">npm</span> install -g <span class="str">openclaw</span></div>
+            <div style="margin-top:10px"><span class="cmt"># 第 2 步：一键安装 galaxy-opc 插件</span></div>
             <div><span class="cmd">npx</span> <span class="str">galaxy-opc</span></div>
-            <div style="margin-top:10px"><span class="cmt"># 插件 npm 包</span></div>
-            <div><span class="str">galaxy-opc-plugin</span></div>
-            <div style="margin-top:10px"><span class="cmt"># 管理后台</span></div>
+            <div style="margin-top:8px"><span class="cmt">#  → 自动写入 openclaw.json、初始化 SQLite 数据库</span></div>
+            <div style="margin-top:10px"><span class="cmt"># 第 3 步：启动 OpenClaw Gateway</span></div>
+            <div><span class="cmd">openclaw</span> <span class="str">gateway</span></div>
+            <div style="margin-top:10px"><span class="cmt"># 第 4 步：打开 AI 对话界面</span></div>
+            <div><span class="cmd">http://localhost:18789</span></div>
+            <div style="margin-top:10px"><span class="cmt"># 第 5 步：打开 OPC 管理后台</span></div>
             <div><span class="cmd">http://localhost:18789</span><span class="str">/opc/admin</span></div>
           </div>
           <div class="tool-chips">
@@ -929,50 +936,130 @@
     </div>
   </section>
 
+  <!-- ── OPB THEORY ── -->
+  <section id="opb-theory" style="background:var(--bg2);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);padding:80px 0">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">理论基础</span>
+        <h2 class="display-lg">一人企业方法论（OPB）</h2>
+        <p>星环OPC的设计底层，源自「一人企业方法论」——用资产思维、杠杆思维经营一人公司</p>
+      </div>
+      <div class="grid-3" style="margin-bottom:32px">
+        <div class="card">
+          <div style="font-size:1.5rem;font-weight:700;color:var(--accent);margin-bottom:10px;font-family:'Space Grotesk',sans-serif">资产思维</div>
+          <p class="body-sm muted" style="margin-bottom:14px">OPB 的核心不是卖时间，而是构建<strong style="color:var(--tx)">可产生被动收入的资产</strong>。内容、代码、品牌、用户池——每一项都是可复利增长的资产。</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <span class="tag">数字产品</span>
+            <span class="tag">内容版权</span>
+            <span class="tag">用户池</span>
+            <span class="tag">个人品牌</span>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:1.5rem;font-weight:700;color:var(--accent);margin-bottom:10px;font-family:'Space Grotesk',sans-serif">新杠杆</div>
+          <p class="body-sm muted" style="margin-bottom:14px">零边际成本的内容与代码是AI时代最强杠杆。结合外包、SaaS、众包基础设施，一个人可以撬动过去需要团队才能完成的业务规模。</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <span class="tag">零边际成本</span>
+            <span class="tag">外包协作</span>
+            <span class="tag">AI 自动化</span>
+            <span class="tag">众包能力</span>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:1.5rem;font-weight:700;color:var(--accent);margin-bottom:10px;font-family:'Space Grotesk',sans-serif">不竞争策略</div>
+          <p class="body-sm muted" style="margin-bottom:14px">避开大公司的主战场，选择<strong style="color:var(--tx)">小众刚需</strong>、<strong style="color:var(--tx)">副产品优势</strong>、<strong style="color:var(--tx)">个人IP差异化</strong>——在大公司不愿做的地方建立护城河。</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <span class="tag">小众刚需</span>
+            <span class="tag">副产品优势</span>
+            <span class="tag">低成本优势</span>
+            <span class="tag">个人IP</span>
+          </div>
+        </div>
+      </div>
+      <!-- Growth Track -->
+      <div style="background:var(--card);border:1px solid var(--bd);border-radius:var(--r-lg);padding:28px 32px">
+        <div style="font-size:.8125rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:16px">OPB 成长路径</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;position:relative">
+          <div style="padding:16px 20px;border-right:1px solid var(--bd)">
+            <div style="font-size:1rem;font-weight:700;margin-bottom:6px">存活个体</div>
+            <p style="font-size:.8125rem;color:var(--tx2);line-height:1.6">副业收入覆盖基本生活，完成 MVPr（最小可行利润）验证，保持主职工作降低风险。</p>
+          </div>
+          <div style="padding:16px 20px;border-right:1px solid var(--bd)">
+            <div style="font-size:1rem;font-weight:700;margin-bottom:6px">一般个体 · 工作自由</div>
+            <p style="font-size:.8125rem;color:var(--tx2);line-height:1.6">副业 MRR ≥ 主业收入，实现「工作自由」，可全职投入一人企业运营。</p>
+          </div>
+          <div style="padding:16px 20px">
+            <div style="font-size:1rem;font-weight:700;margin-bottom:6px">超级个体</div>
+            <p style="font-size:.8125rem;color:var(--tx2);line-height:1.6">多条业务线共享用户池、品牌和基础设施，形成复利增长，失败业务仍留下可复用资产。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ── BUSINESS MODEL ── -->
   <section id="model" class="section">
     <div class="container">
       <div class="section-header">
         <span class="eyebrow">商业模式</span>
-        <h2 class="display-lg">星环如何创造价值</h2>
-        <p>以孵化为切入点，以赋能为护城河，以加盟网络放大规模</p>
+        <h2 class="display-lg">星环·OPC·城投 全闭环</h2>
+        <p>以孵化为切入点，以服务回流为现金流，以城投资产转让为资本退出通道</p>
       </div>
 
       <div class="model-flow">
         <div class="model-step">
           <div class="model-step-num">01</div>
-          <h4>星环孵化</h4>
-          <p>直接注册并运营一人公司，以自身作为产品的第一批验证用户，积累真实运营数据与最佳实践。</p>
+          <h4>投资孵化</h4>
+          <p>星环以参股形式投资有潜力的创业者，通过股权绑定吸引人才注册一人公司，积累真实运营数据。</p>
         </div>
         <div class="model-step">
           <div class="model-step-num">02</div>
-          <h4>平台赋能</h4>
-          <p>通过 galaxy-opc-plugin 将运营经验沉淀为AI工具，向其他创业者输出"以AI为员工"的运营方法论。</p>
+          <h4>服务回流</h4>
+          <p>一人公司反向采购星环的技术（AI工具）、财务、法务、HR、新媒体共享服务，投资资金以服务费形式稳定回流。</p>
         </div>
         <div class="model-step">
           <div class="model-step-num">03</div>
-          <h4>加盟扩张</h4>
-          <p>洛阳OPC、盐城OPC等城市合伙人以加盟形式复制"星环模式"，形成全国OPC孵化网络。</p>
+          <h4>资产打包</h4>
+          <p>亏损或成熟的OPC被收并购后整合打包，形成具有真实运营数据和科创属性的「资产包」，同步实现税务优化。</p>
         </div>
         <div class="model-step">
           <div class="model-step-num">04</div>
-          <h4>资本退出</h4>
-          <p>成熟OPC通过资产包打包、并购、IPO等方式实现资本化退出，形成完整的商业闭环。</p>
+          <h4>城投转让</h4>
+          <p>资产包转让给地方城投公司，城投以此申请低息科创贷；星环按融资总额收取融资服务费，完成资金闭环。</p>
+        </div>
+      </div>
+
+      <!-- 资金闭环说明 -->
+      <div style="margin-top:32px;background:var(--card);border:1px solid var(--bd);border-radius:var(--r-lg);padding:28px 32px">
+        <div style="font-size:.8125rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:16px">为什么城投会参与？</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+          <div>
+            <div style="font-weight:600;font-size:.9375rem;margin-bottom:6px">盘活地方资产</div>
+            <p style="font-size:.8125rem;color:var(--tx2);line-height:1.6">城投获得具有真实运营数据的科创资产，丰富资产结构，提升资产质量。</p>
+          </div>
+          <div>
+            <div style="font-weight:600;font-size:.9375rem;margin-bottom:6px">科创贷融资</div>
+            <p style="font-size:.8125rem;color:var(--tx2);line-height:1.6">利用OPC的业务流水和科创属性，向银行申请政策性科创贷，享受极低利率和政府背景支持。</p>
+          </div>
+          <div>
+            <div style="font-weight:600;font-size:.9375rem;margin-bottom:6px">数字经济政绩</div>
+            <p style="font-size:.8125rem;color:var(--tx2);line-height:1.6">批量落地一人公司孵化基地，为地方政府创造就业数据、数字经济新业态指标和科创企业数量。</p>
+          </div>
         </div>
       </div>
 
       <div class="revenue-grid">
         <div class="revenue-card">
-          <div class="amount">SaaS</div>
-          <div class="label">插件订阅授权费用</div>
+          <div class="amount">服务</div>
+          <div class="label">OPC 孵化服务 · 共享专业服务采购回流</div>
         </div>
         <div class="revenue-card">
           <div class="amount">加盟</div>
-          <div class="label">城市合伙人加盟收益</div>
+          <div class="label">城市合伙人加盟 · 孵化服务收益分成</div>
         </div>
         <div class="revenue-card">
           <div class="amount">资本</div>
-          <div class="label">OPC 并购 / 投资退出</div>
+          <div class="label">资产包打包转让 · 城投科创贷融资服务费</div>
         </div>
       </div>
     </div>
@@ -1165,7 +1252,7 @@
       <div class="about-grid">
         <div>
           <p class="body-lg muted" style="margin-bottom:28px">
-            星环OPC中心由 p3ngsam 创立，核心信念是：
+            星环OPC中心由星环集团创始人 <strong style="color:var(--tx)">MAX</strong> 创立，核心信念是：
             <strong style="color:var(--tx)">在AI时代，一个人可以经营一家真正的公司</strong>。
             我们不是在做工具，而是在验证一种新的商业文明——
             以AI为员工，以数据为资产，以网络效应为护城河。
@@ -1201,12 +1288,8 @@
           </ul>
         </div>
         <div>
-          <h3 style="font-size:1.125rem;font-weight:700;margin-bottom:20px">战略合作伙伴</h3>
-          <div class="partner-logos">
-            <span class="partner-tag">OpenClaw</span>
-            <span class="partner-tag">洛阳OPC中心</span>
-            <span class="partner-tag">盐城OPC中心</span>
-          </div>
+          <h3 style="font-size:1.125rem;font-weight:700;margin-bottom:16px">战略合作伙伴</h3>
+          <p class="body-sm muted" style="margin-bottom:0">正在开放城市合伙人合作，欢迎联系 <a href="mailto:p3ngsam@163.com" style="color:var(--accent)">p3ngsam@163.com</a> 洽谈。</p>
           <div style="margin-top:36px">
             <h3 style="font-size:1.125rem;font-weight:700;margin-bottom:16px">技术栈</h3>
             <div style="display:flex;flex-wrap:wrap;gap:8px">
@@ -1265,11 +1348,12 @@
       </div>
       <div class="footer-links">
         <a href="#plugin">平台介绍</a>
+        <a href="#opb-theory">OPB理论</a>
         <a href="#model">商业模式</a>
         <a href="#audience">服务对象</a>
         <a href="mailto:p3ngsam@163.com">联系我们</a>
       </div>
-      <div class="footer-copy">© 2025 星环OPC中心. MIT License.</div>
+      <div class="footer-copy">© 2026 星环OPC中心. MIT License.</div>
     </div>
   </footer>
 
