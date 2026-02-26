@@ -225,20 +225,12 @@ ${bold(cyan("  ╚════════════════════�
 
 async function installPlugin() {
   // 清理可能残留的旧插件路径配置，否则 openclaw 会因路径不存在而拒绝启动
+  // 清理所有可能导致 openclaw 启动失败的残留插件配置
   const cfg = readJson(CONFIG_PATH);
-  let dirty = false;
-  if (cfg.plugins?.load?.paths?.length) {
-    delete cfg.plugins.load.paths;
-    dirty = true;
-  }
-  if (cfg.plugins?.load && Object.keys(cfg.plugins.load).length === 0) {
+  if (cfg.plugins) {
     delete cfg.plugins.load;
-  }
-  if (cfg.plugins?.entries?.["opc-platform"]) {
-    delete cfg.plugins.entries["opc-platform"];
-    dirty = true;
-  }
-  if (dirty) {
+    delete cfg.plugins.installs;
+    delete cfg.plugins.entries;
     writeJson(CONFIG_PATH, cfg);
     console.log(dim("  已清理旧插件配置"));
   }
@@ -269,9 +261,12 @@ async function cmdSetup() {
     gateway: { mode: "local" },
   });
 
-  // 清理残留的旧插件路径（由旧版向导写入，openclaw 会因路径不存在报错）
-  if (newConfig.plugins?.load?.paths) delete newConfig.plugins.load.paths;
-  if (newConfig.plugins?.entries?.["opc-platform"]) delete newConfig.plugins.entries["opc-platform"];
+  // 清理残留的旧插件路径（由旧版向导写入，openclaw 会因路径/entry不存在报错）
+  if (newConfig.plugins) {
+    delete newConfig.plugins.load;
+    delete newConfig.plugins.installs;
+    delete newConfig.plugins.entries;
+  }
 
   const regionIdx = await askChoice("选择 AI 模型地区", [
     { label: "国产模型", desc: "通义千问 / MiniMax / 豆包 / Kimi / DeepSeek", recommended: true },
