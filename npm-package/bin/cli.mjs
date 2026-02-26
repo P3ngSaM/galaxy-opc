@@ -437,14 +437,17 @@ async function cmdSetup() {
   console.log(`
   ${bold(green("安装完成！"))}
 
-  启动命令:
+  ${bold("启动命令:")}
     ${cyan("openclaw gateway")}
 
-  管理后台（需带 token）:
-    ${cyan(`http://localhost:18789/opc/admin?token=${gatewayToken}`)}
+  ${bold("启动后访问:")}
+    对话界面:  ${cyan("http://localhost:18789")}
+    管理后台:  ${cyan(`http://localhost:18789/opc/admin?token=${gatewayToken}`)}
 
-  后台驻守（开机自启）:
+  ${bold("后台驻守（开机自启）:")}
     ${cyan("openclaw onboard --install-daemon")}
+
+  ${dim("提示：插件在 gateway 启动时自动加载，无需额外操作。")}
 `);
   if (defaultModel) console.log(`  当前模型: ${cyan(defaultModel)}\n`);
   separator("═");
