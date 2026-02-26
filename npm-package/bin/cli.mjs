@@ -128,8 +128,8 @@ const HOME        = os.homedir();
 const STATE_DIR   = path.join(HOME, ".openclaw");
 const CONFIG_PATH = path.join(STATE_DIR, "openclaw.json");
 const ENV_PATH    = path.join(STATE_DIR, ".env");
-// 插件由 openclaw plugins install 写入 ~/.openclaw/extensions/opc-platform
-const PLUGIN_INSTALL_DIR = path.join(STATE_DIR, "extensions", "opc-platform");
+// 插件由 openclaw plugins install 写入 ~/.openclaw/extensions/galaxy-opc-plugin
+const PLUGIN_INSTALL_DIR = path.join(STATE_DIR, "extensions", "galaxy-opc-plugin");
 
 // ─── 命令路由 ───────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -250,8 +250,15 @@ async function cmdSetup() {
   const existingPaths = newConfig.plugins?.load?.paths ?? [];
   const mergedPaths = Array.from(new Set([...existingPaths, PLUGIN_INSTALL_DIR]));
   newConfig = deepMerge(newConfig, {
+    gateway: { mode: "local" },
     plugins: { load: { paths: mergedPaths } },
   });
+
+  // 清理可能残留的错误 entries key（openclaw plugins install 会写入 galaxy-opc-plugin，
+  // 但旧版本或手动配置可能留下 opc-platform key 导致 id mismatch 警告）
+  if (newConfig.plugins?.entries?.["opc-platform"]) {
+    delete newConfig.plugins.entries["opc-platform"];
+  }
 
   const regionIdx = await askChoice("选择 AI 模型地区", [
     { label: "国产模型", desc: "通义千问 / MiniMax / 豆包 / Kimi / DeepSeek", recommended: true },
