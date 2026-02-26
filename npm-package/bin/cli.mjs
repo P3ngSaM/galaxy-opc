@@ -244,6 +244,19 @@ async function installPlugin() {
     console.error(gray("  请手动运行: openclaw plugins install galaxy-opc-plugin\n"));
     process.exit(1);
   }
+
+  // better-sqlite3 是 native 模块，需要针对当前 Node.js 版本编译
+  const pluginDir = path.join(STATE_DIR, "extensions", "galaxy-opc-plugin");
+  if (fs.existsSync(pluginDir)) {
+    console.log(dim("\n  编译原生模块（better-sqlite3）...\n"));
+    try {
+      await runCommand("npm", ["rebuild", "better-sqlite3", "--prefix", pluginDir]);
+      console.log(green("  ✓ 原生模块编译完成"));
+    } catch {
+      console.log(yellow("  ! 原生模块编译失败，请手动执行:"));
+      console.log(gray(`    cd ${pluginDir} && npm rebuild better-sqlite3`));
+    }
+  }
 }
 
 // ─── setup：配置 AI 模型 + 写入 openclaw.json ───────────────────────────────
