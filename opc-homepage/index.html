@@ -728,6 +728,7 @@
     <div class="nav-inner">
       <a class="nav-logo" href="#hero">
         <img id="nav-logo-img" src="galaxy.png" alt="Galaxy OPC" />
+        <span id="nav-brand" style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1rem;letter-spacing:-0.01em">GalaxyOPC</span>
       </a>
       <div class="nav-spacer"></div>
       <nav class="nav-links">
@@ -756,7 +757,6 @@
     <div class="hero-glow"></div>
     <div class="container hero-content">
       <div class="hero-center">
-        <img id="hero-logo" class="hero-logo" src="galaxy.png" alt="Galaxy OPC" />
         <div style="margin-bottom: 20px;">
           <span class="badge badge-accent">星环 Galaxy OPC Platform</span>
         </div>
@@ -1355,7 +1355,6 @@
     // ── Theme ──
     var html = document.documentElement;
     var navLogoImg = document.getElementById('nav-logo-img');
-    var heroLogoImg = document.getElementById('hero-logo');
     var ctaLogoImg = document.getElementById('cta-logo');
     var footerLogoImg = document.getElementById('footer-logo');
     var iconMoon = document.getElementById('icon-moon');
@@ -1367,7 +1366,6 @@
       var isDark = theme === 'dark';
       var logo = isDark ? 'galaxy.png' : 'galaxy_black.png';
       navLogoImg.src = logo;
-      heroLogoImg.src = logo;
       ctaLogoImg.src = logo;
       footerLogoImg.src = logo;
       iconMoon.style.display = isDark ? 'block' : 'none';
