@@ -59,6 +59,11 @@ export class SqliteAdapter implements OpcDatabase {
     return generateId();
   }
 
+  /** 在事务中执行回调，失败自动回滚 */
+  transaction<T>(fn: () => T): T {
+    return this.db.transaction(fn)();
+  }
+
   close(): void {
     this.db.close();
   }
@@ -335,7 +340,7 @@ export class SqliteAdapter implements OpcDatabase {
       .prepare(
         `SELECT
           COUNT(*) as total,
-          SUM(CASE WHEN status='active' THEN 1 ELSE 0 END) as active
+          COALESCE(SUM(CASE WHEN status='active' THEN 1 ELSE 0 END), 0) as active
         FROM opc_companies`,
       )
       .get() as { total: number; active: number };

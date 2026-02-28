@@ -8,7 +8,7 @@
 import { Type, type Static } from "@sinclair/typebox";
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import type { OpcDatabase } from "../db/index.js";
-import { json } from "../utils/tool-helper.js";
+import { json, toolError } from "../utils/tool-helper.js";
 
 const OPB_FIELDS = [
   "track",             // 赛道（所处行业/细分市场）
@@ -110,7 +110,7 @@ export function registerOpbTool(api: OpenClawPluginApi, db: OpcDatabase): void {
                 "SELECT id FROM opc_opb_canvas WHERE company_id = ?", p.company_id,
               ) as { id: string } | null;
               if (existing) {
-                return json({ ok: false, error: "该公司画布已存在，请使用 canvas_update 更新" });
+                return toolError("该公司画布已存在，请使用 canvas_update 更新", "VALIDATION_ERROR");
               }
               const id = db.genId();
               const now = new Date().toISOString();
@@ -139,7 +139,7 @@ export function registerOpbTool(api: OpenClawPluginApi, db: OpcDatabase): void {
                 "SELECT * FROM opc_opb_canvas WHERE company_id = ?", p.company_id,
               ) as CanvasRow | null;
               if (!canvas) {
-                return json({ ok: false, error: "该公司暂无 OPB 画布，请先使用 canvas_init 创建" });
+                return toolError("该公司暂无 OPB 画布，请先使用 canvas_init 创建", "RECORD_NOT_FOUND");
               }
               // Calculate completion percentage
               const filled = OPB_FIELDS.filter(f => canvas[f as keyof CanvasRow] && String(canvas[f as keyof CanvasRow]).trim() !== "").length;
@@ -152,7 +152,7 @@ export function registerOpbTool(api: OpenClawPluginApi, db: OpcDatabase): void {
                 "SELECT id FROM opc_opb_canvas WHERE company_id = ?", p.company_id,
               ) as { id: string } | null;
               if (!existing) {
-                return json({ ok: false, error: "该公司暂无 OPB 画布，请先使用 canvas_init 创建" });
+                return toolError("该公司暂无 OPB 画布，请先使用 canvas_init 创建", "RECORD_NOT_FOUND");
               }
               const now = new Date().toISOString();
               const updates: string[] = [];
@@ -165,7 +165,7 @@ export function registerOpbTool(api: OpenClawPluginApi, db: OpcDatabase): void {
                 }
               }
               if (updates.length === 0) {
-                return json({ ok: false, error: "未提供任何更新字段" });
+                return toolError("未提供任何更新字段", "VALIDATION_ERROR");
               }
               updates.push("updated_at = ?");
               vals.push(now, existing.id);
@@ -180,10 +180,10 @@ export function registerOpbTool(api: OpenClawPluginApi, db: OpcDatabase): void {
             }
 
             default:
-              return json({ error: "未知 action" });
+              return toolError(`未知操作: ${(p as { action: string }).action}`, "UNKNOWN_ACTION");
           }
         } catch (err) {
-          return json({ error: err instanceof Error ? err.message : String(err) });
+          return toolError(err instanceof Error ? err.message : String(err), "DB_ERROR");
         }
       },
     },

@@ -5,7 +5,7 @@
 import { Type, type Static } from "@sinclair/typebox";
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import type { OpcDatabase } from "../db/index.js";
-import { json } from "../utils/tool-helper.js";
+import { json, toolError } from "../utils/tool-helper.js";
 
 const FinanceSchema = Type.Union([
   Type.Object({
@@ -13,11 +13,18 @@ const FinanceSchema = Type.Union([
     company_id: Type.String({ description: "公司 ID" }),
     type: Type.String({ description: "发票类型: sales(销项) 或 purchase(进项)" }),
     counterparty: Type.String({ description: "对方单位名称" }),
-    amount: Type.Number({ description: "不含税金额（元）" }),
+    amount: Type.Number({ description: "不含税金额（元），有 items 时可设为 0（自动汇总）" }),
     tax_rate: Type.Optional(Type.Number({ description: "税率，如 0.06 表示 6%，默认 0.06" })),
-    invoice_number: Type.Optional(Type.String({ description: "发票号码" })),
+    invoice_number: Type.Optional(Type.String({ description: "发票号码（不填则自动生成 INV-YYYYMM-NNN）" })),
     issue_date: Type.Optional(Type.String({ description: "开票日期 (YYYY-MM-DD)" })),
+    due_date: Type.Optional(Type.String({ description: "到期日期 (YYYY-MM-DD)" })),
     notes: Type.Optional(Type.String({ description: "备注" })),
+    items: Type.Optional(Type.Array(Type.Object({
+      description: Type.String({ description: "项目描述" }),
+      quantity: Type.Number({ description: "数量" }),
+      unit_price: Type.Number({ description: "单价（元）" }),
+      tax_rate: Type.Optional(Type.Number({ description: "该行税率（覆盖发票级税率）" })),
+    }), { description: "明细行数组" })),
   }),
   Type.Object({
     action: Type.Literal("list_invoices"),
@@ -70,6 +77,39 @@ const FinanceSchema = Type.Union([
     action: Type.Literal("delete_tax_filing"),
     filing_id: Type.String({ description: "税务申报 ID" }),
   }),
+  Type.Object({
+    action: Type.Literal("get_invoice"),
+    invoice_id: Type.String({ description: "发票 ID" }),
+  }),
+  Type.Object({
+    action: Type.Literal("tax_filing_checklist"),
+    company_id: Type.String({ description: "公司 ID" }),
+    period: Type.String({ description: "报税期间，如 2026-Q1 或 2026-03" }),
+  }),
+  Type.Object({
+    action: Type.Literal("batch_import_transactions"),
+    company_id: Type.String({ description: "公司 ID" }),
+    transactions: Type.Array(Type.Object({
+      type: Type.String({ description: "类型: income/expense" }),
+      amount: Type.Number({ description: "金额（元）" }),
+      category: Type.Optional(Type.String({ description: "分类" })),
+      description: Type.Optional(Type.String({ description: "描述" })),
+      counterparty: Type.Optional(Type.String({ description: "交易对方" })),
+      transaction_date: Type.Optional(Type.String({ description: "交易日期 (YYYY-MM-DD)" })),
+    }), { description: "交易数组", minItems: 1, maxItems: 200 }),
+  }),
+  Type.Object({
+    action: Type.Literal("batch_import_invoices"),
+    company_id: Type.String({ description: "公司 ID" }),
+    invoices: Type.Array(Type.Object({
+      type: Type.String({ description: "类型: sales/purchase" }),
+      counterparty: Type.String({ description: "对方单位" }),
+      amount: Type.Number({ description: "不含税金额（元）" }),
+      tax_rate: Type.Optional(Type.Number({ description: "税率，默认 0.06" })),
+      invoice_number: Type.Optional(Type.String({ description: "发票号码" })),
+      issue_date: Type.Optional(Type.String({ description: "开票日期 (YYYY-MM-DD)" })),
+    }), { description: "发票数组", minItems: 1, maxItems: 200 }),
+  }),
 ]);
 
 type FinanceParams = Static<typeof FinanceSchema>;
@@ -100,7 +140,10 @@ export function registerFinanceTool(api: OpenClawPluginApi, db: OpcDatabase): vo
         "财税管理工具。操作: create_invoice(创建发票), list_invoices(发票列表), " +
         "update_invoice_status(更新发票状态), calc_vat(增值税计算), " +
         "calc_income_tax(所得税计算), create_tax_filing(创建税务申报), " +
-        "list_tax_filings(申报列表), tax_calendar(税务日历), delete_invoice(删除发票), delete_tax_filing(删除税务申报记录)",
+        "list_tax_filings(申报列表), tax_calendar(税务日历), delete_invoice(删除发票), " +
+        "delete_tax_filing(删除税务申报记录), batch_import_transactions(批量导入交易), " +
+        "batch_import_invoices(批量导入发票), get_invoice(获取发票详情含明细行), " +
+        "tax_filing_checklist(报税清单)",
       parameters: FinanceSchema,
       async execute(_toolCallId, params) {
         const p = params as FinanceParams;
@@ -109,17 +152,74 @@ export function registerFinanceTool(api: OpenClawPluginApi, db: OpcDatabase): vo
             case "create_invoice": {
               const id = db.genId();
               const now = new Date().toISOString();
-              const taxRate = p.tax_rate ?? 0.06;
-              const taxAmount = Math.round(p.amount * taxRate * 100) / 100;
-              const totalAmount = p.amount + taxAmount;
-              db.execute(
-                `INSERT INTO opc_invoices (id, company_id, invoice_number, type, counterparty, amount, tax_rate, tax_amount, total_amount, status, issue_date, notes, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, ?)`,
-                id, p.company_id, p.invoice_number ?? "", p.type, p.counterparty,
-                p.amount, taxRate, taxAmount, totalAmount,
-                p.issue_date ?? now.slice(0, 10), p.notes ?? "", now,
-              );
-              return json(db.queryOne("SELECT * FROM opc_invoices WHERE id = ?", id));
+              const issueDate = p.issue_date ?? now.slice(0, 10);
+              const dueDate = (p as Record<string, unknown>).due_date as string ?? "";
+              const items = (p as Record<string, unknown>).items as { description: string; quantity: number; unit_price: number; tax_rate?: number }[] | undefined;
+              const globalTaxRate = p.tax_rate ?? 0.06;
+
+              // 自动编号: INV-YYYYMM-NNN
+              let invoiceNumber = p.invoice_number ?? "";
+              if (!invoiceNumber) {
+                const month = issueDate.slice(0, 7).replace("-", "");
+                const countRow = db.queryOne(
+                  "SELECT COUNT(*) as cnt FROM opc_invoices WHERE company_id = ? AND invoice_number LIKE ?",
+                  p.company_id, `INV-${month}-%`,
+                ) as { cnt: number };
+                const seq = String((countRow?.cnt ?? 0) + 1).padStart(3, "0");
+                invoiceNumber = `INV-${month}-${seq}`;
+              }
+
+              let amount: number;
+              let taxAmount: number;
+              let totalAmount: number;
+
+              if (items && items.length > 0) {
+                // 从明细行汇总
+                amount = 0;
+                taxAmount = 0;
+                for (const item of items) {
+                  const lineAmount = Math.round(item.quantity * item.unit_price * 100) / 100;
+                  const lineRate = item.tax_rate ?? globalTaxRate;
+                  const lineTax = Math.round(lineAmount * lineRate * 100) / 100;
+                  amount += lineAmount;
+                  taxAmount += lineTax;
+                }
+                totalAmount = amount + taxAmount;
+              } else {
+                amount = p.amount;
+                taxAmount = Math.round(amount * globalTaxRate * 100) / 100;
+                totalAmount = amount + taxAmount;
+              }
+
+              db.transaction(() => {
+                db.execute(
+                  `INSERT INTO opc_invoices (id, company_id, invoice_number, type, counterparty, amount, tax_rate, tax_amount, total_amount, status, issue_date, due_date, notes, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, ?, ?)`,
+                  id, p.company_id, invoiceNumber, p.type, p.counterparty,
+                  amount, globalTaxRate, taxAmount, totalAmount,
+                  issueDate, dueDate, p.notes ?? "", now,
+                );
+
+                // 插入明细行
+                if (items && items.length > 0) {
+                  for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    const lineAmount = Math.round(item.quantity * item.unit_price * 100) / 100;
+                    const lineRate = item.tax_rate ?? globalTaxRate;
+                    const lineTax = Math.round(lineAmount * lineRate * 100) / 100;
+                    db.execute(
+                      `INSERT INTO opc_invoice_items (id, invoice_id, description, quantity, unit_price, amount, tax_rate, tax_amount, sort_order)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                      db.genId(), id, item.description, item.quantity, item.unit_price,
+                      lineAmount, lineRate, lineTax, i + 1,
+                    );
+                  }
+                }
+              });
+
+              const invoice = db.queryOne("SELECT * FROM opc_invoices WHERE id = ?", id);
+              const invoiceItems = db.query("SELECT * FROM opc_invoice_items WHERE invoice_id = ? ORDER BY sort_order", id);
+              return json({ ...(invoice as object), items: invoiceItems });
             }
 
             case "list_invoices": {
@@ -133,7 +233,9 @@ export function registerFinanceTool(api: OpenClawPluginApi, db: OpcDatabase): vo
 
             case "update_invoice_status": {
               db.execute("UPDATE opc_invoices SET status = ? WHERE id = ?", p.status, p.invoice_id);
-              return json(db.queryOne("SELECT * FROM opc_invoices WHERE id = ?", p.invoice_id) ?? { error: "发票不存在" });
+              const invoice = db.queryOne("SELECT * FROM opc_invoices WHERE id = ?", p.invoice_id);
+              if (!invoice) return toolError(`发票 ${p.invoice_id} 不存在`, "INVOICE_NOT_FOUND");
+              return json(invoice);
             }
 
             case "calc_vat": {
@@ -229,11 +331,124 @@ export function registerFinanceTool(api: OpenClawPluginApi, db: OpcDatabase): vo
               return json({ ok: true });
             }
 
+            case "get_invoice": {
+              const invoice = db.queryOne("SELECT * FROM opc_invoices WHERE id = ?", p.invoice_id);
+              if (!invoice) return toolError("发票不存在", "INVOICE_NOT_FOUND");
+              const invoiceItems = db.query("SELECT * FROM opc_invoice_items WHERE invoice_id = ? ORDER BY sort_order", p.invoice_id);
+              return json({ ...(invoice as object), items: invoiceItems });
+            }
+
+            case "tax_filing_checklist": {
+              // 解析期间 (支持 2026-Q1 或 2026-03 格式)
+              const periodStr = p.period;
+              let datePrefix: string;
+              if (periodStr.includes("Q")) {
+                const [year, q] = periodStr.split("-Q");
+                const quarter = parseInt(q);
+                const months = quarter === 1 ? ["01", "02", "03"] : quarter === 2 ? ["04", "05", "06"] : quarter === 3 ? ["07", "08", "09"] : ["10", "11", "12"];
+                datePrefix = months.map((m) => `${year}-${m}`).join("|");
+              } else {
+                datePrefix = periodStr;
+              }
+
+              // 汇总销项/进项
+              const likeClauses = datePrefix.split("|");
+              let salesTotal = 0, salesTax = 0, purchaseTotal = 0, purchaseTax = 0;
+              for (const prefix of likeClauses) {
+                const sales = db.queryOne(
+                  "SELECT COALESCE(SUM(amount), 0) as total, COALESCE(SUM(tax_amount), 0) as tax FROM opc_invoices WHERE company_id = ? AND type = 'sales' AND issue_date LIKE ?",
+                  p.company_id, prefix + "%",
+                ) as { total: number; tax: number };
+                salesTotal += sales.total;
+                salesTax += sales.tax;
+                const purchases = db.queryOne(
+                  "SELECT COALESCE(SUM(amount), 0) as total, COALESCE(SUM(tax_amount), 0) as tax FROM opc_invoices WHERE company_id = ? AND type = 'purchase' AND issue_date LIKE ?",
+                  p.company_id, prefix + "%",
+                ) as { total: number; tax: number };
+                purchaseTotal += purchases.total;
+                purchaseTax += purchases.tax;
+              }
+
+              // 费用票数量
+              let expenseCount = 0;
+              for (const prefix of likeClauses) {
+                const cnt = (db.queryOne(
+                  "SELECT COUNT(*) as cnt FROM opc_transactions WHERE company_id = ? AND type = 'expense' AND transaction_date LIKE ?",
+                  p.company_id, prefix + "%",
+                ) as { cnt: number }).cnt;
+                expenseCount += cnt;
+              }
+
+              // 已有税务申报
+              const existingFilings = db.query(
+                "SELECT * FROM opc_tax_filings WHERE company_id = ? AND period = ?",
+                p.company_id, periodStr,
+              );
+
+              const vatPayable = Math.max(0, salesTax - purchaseTax);
+
+              return json({
+                ok: true,
+                period: periodStr,
+                checklist: [
+                  { step: 1, item: "核对销项发票", detail: `${salesTotal.toLocaleString()} 元（税额 ${salesTax.toLocaleString()} 元）` },
+                  { step: 2, item: "核对进项发票", detail: `${purchaseTotal.toLocaleString()} 元（可抵扣税额 ${purchaseTax.toLocaleString()} 元）` },
+                  { step: 3, item: "计算增值税", detail: `应缴 ${vatPayable.toLocaleString()} 元 = 销项税 ${salesTax.toLocaleString()} - 进项税 ${purchaseTax.toLocaleString()}` },
+                  { step: 4, item: "核对费用票", detail: `本期支出 ${expenseCount} 笔，确保均有对应票据` },
+                  { step: 5, item: "检查已有申报记录", detail: existingFilings.length > 0 ? `已有 ${existingFilings.length} 条申报记录` : "暂无申报记录，需创建" },
+                  { step: 6, item: "提交申报", detail: "确认以上数据无误后，使用 create_tax_filing 创建申报记录" },
+                ],
+                summary: { sales_total: salesTotal, sales_tax: salesTax, purchase_total: purchaseTotal, purchase_tax: purchaseTax, vat_payable: vatPayable, expense_count: expenseCount },
+                existing_filings: existingFilings,
+              });
+            }
+
+            case "batch_import_transactions": {
+              const records: unknown[] = [];
+              db.transaction(() => {
+                const now = new Date().toISOString();
+                for (const tx of p.transactions) {
+                  const id = db.genId();
+                  db.execute(
+                    `INSERT INTO opc_transactions (id, company_id, type, category, amount, description, counterparty, transaction_date, created_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    id, p.company_id, tx.type, tx.category ?? "other", tx.amount,
+                    tx.description ?? "", tx.counterparty ?? "",
+                    tx.transaction_date ?? now.slice(0, 10), now,
+                  );
+                  records.push({ id, type: tx.type, amount: tx.amount, counterparty: tx.counterparty ?? "" });
+                }
+              });
+              return json({ ok: true, imported_count: p.transactions.length, records });
+            }
+
+            case "batch_import_invoices": {
+              const records: unknown[] = [];
+              db.transaction(() => {
+                const now = new Date().toISOString();
+                for (const inv of p.invoices) {
+                  const id = db.genId();
+                  const taxRate = inv.tax_rate ?? 0.06;
+                  const taxAmount = Math.round(inv.amount * taxRate * 100) / 100;
+                  const totalAmount = inv.amount + taxAmount;
+                  db.execute(
+                    `INSERT INTO opc_invoices (id, company_id, invoice_number, type, counterparty, amount, tax_rate, tax_amount, total_amount, status, issue_date, notes, created_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, '', ?)`,
+                    id, p.company_id, inv.invoice_number ?? "", inv.type, inv.counterparty,
+                    inv.amount, taxRate, taxAmount, totalAmount,
+                    inv.issue_date ?? now.slice(0, 10), now,
+                  );
+                  records.push({ id, type: inv.type, counterparty: inv.counterparty, total_amount: totalAmount });
+                }
+              });
+              return json({ ok: true, imported_count: p.invoices.length, records });
+            }
+
             default:
-              return json({ error: `未知操作: ${(p as { action: string }).action}` });
+              return toolError(`未知操作: ${(p as { action: string }).action}`, "UNKNOWN_ACTION");
           }
         } catch (err) {
-          return json({ error: err instanceof Error ? err.message : String(err) });
+          return toolError(err instanceof Error ? err.message : String(err), "DB_ERROR");
         }
       },
     },

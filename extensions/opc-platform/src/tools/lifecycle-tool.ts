@@ -5,7 +5,7 @@
 import { Type, type Static } from "@sinclair/typebox";
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import type { OpcDatabase } from "../db/index.js";
-import { json } from "../utils/tool-helper.js";
+import { json, toolError } from "../utils/tool-helper.js";
 
 const LifecycleSchema = Type.Union([
   Type.Object({
@@ -151,7 +151,7 @@ export function registerLifecycleTool(api: OpenClawPluginApi, db: OpcDatabase): 
                 sets.push("completed_date = ?");
                 vals.push(new Date().toISOString().slice(0, 10));
               }
-              if (sets.length === 0) return json({ error: "未提供任何更新字段" });
+              if (sets.length === 0) return toolError("未提供任何更新字段", "VALIDATION_ERROR");
               vals.push(p.milestone_id);
               db.execute(`UPDATE opc_milestones SET ${sets.join(", ")} WHERE id = ?`, ...vals);
               return json(db.queryOne("SELECT * FROM opc_milestones WHERE id = ?", p.milestone_id));
@@ -159,7 +159,7 @@ export function registerLifecycleTool(api: OpenClawPluginApi, db: OpcDatabase): 
 
             case "generate_report": {
               const company = db.queryOne("SELECT * FROM opc_companies WHERE id = ?", p.company_id);
-              if (!company) return json({ error: "公司不存在" });
+              if (!company) return toolError("公司不存在", "COMPANY_NOT_FOUND");
 
               const employees = db.query(
                 "SELECT COUNT(*) as count FROM opc_hr_records WHERE company_id = ? AND status = 'active'", p.company_id,
@@ -237,10 +237,10 @@ export function registerLifecycleTool(api: OpenClawPluginApi, db: OpcDatabase): 
             }
 
             default:
-              return json({ error: `未知操作: ${(p as { action: string }).action}` });
+              return toolError(`未知操作: ${(p as { action: string }).action}`, "UNKNOWN_ACTION");
           }
         } catch (err) {
-          return json({ error: err instanceof Error ? err.message : String(err) });
+          return toolError(err instanceof Error ? err.message : String(err), "DB_ERROR");
         }
       },
     },

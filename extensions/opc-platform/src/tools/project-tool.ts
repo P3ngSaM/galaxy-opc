@@ -5,7 +5,7 @@
 import { Type, type Static } from "@sinclair/typebox";
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import type { OpcDatabase } from "../db/index.js";
-import { json } from "../utils/tool-helper.js";
+import { json, toolError } from "../utils/tool-helper.js";
 
 const ProjectSchema = Type.Union([
   Type.Object({
@@ -120,7 +120,9 @@ export function registerProjectTool(api: OpenClawPluginApi, db: OpcDatabase): vo
               fields.push("updated_at = ?"); values.push(new Date().toISOString());
               values.push(p.project_id);
               db.execute(`UPDATE opc_projects SET ${fields.join(", ")} WHERE id = ?`, ...values);
-              return json(db.queryOne("SELECT * FROM opc_projects WHERE id = ?", p.project_id) ?? { error: "项目不存在" });
+              const updated = db.queryOne("SELECT * FROM opc_projects WHERE id = ?", p.project_id);
+              if (!updated) return toolError("项目不存在", "RECORD_NOT_FOUND");
+              return json(updated);
             }
 
             case "add_task": {
@@ -155,12 +157,14 @@ export function registerProjectTool(api: OpenClawPluginApi, db: OpcDatabase): vo
               fields.push("updated_at = ?"); values.push(new Date().toISOString());
               values.push(p.task_id);
               db.execute(`UPDATE opc_tasks SET ${fields.join(", ")} WHERE id = ?`, ...values);
-              return json(db.queryOne("SELECT * FROM opc_tasks WHERE id = ?", p.task_id) ?? { error: "任务不存在" });
+              const updatedTask = db.queryOne("SELECT * FROM opc_tasks WHERE id = ?", p.task_id);
+              if (!updatedTask) return toolError("任务不存在", "RECORD_NOT_FOUND");
+              return json(updatedTask);
             }
 
             case "project_summary": {
               const project = db.queryOne("SELECT * FROM opc_projects WHERE id = ?", p.project_id);
-              if (!project) return json({ error: "项目不存在" });
+              if (!project) return toolError("项目不存在", "RECORD_NOT_FOUND");
               const tasks = db.query("SELECT status, COUNT(*) as count, SUM(hours_estimated) as est, SUM(hours_actual) as actual FROM opc_tasks WHERE project_id = ? GROUP BY status", p.project_id);
               const overdue = db.query(
                 "SELECT * FROM opc_tasks WHERE project_id = ? AND status != 'done' AND due_date != '' AND due_date < date('now')",
@@ -189,10 +193,10 @@ export function registerProjectTool(api: OpenClawPluginApi, db: OpcDatabase): vo
             }
 
             default:
-              return json({ error: `未知操作: ${(p as { action: string }).action}` });
+              return toolError(`未知操作: ${(p as { action: string }).action}`, "UNKNOWN_ACTION");
           }
         } catch (err) {
-          return json({ error: err instanceof Error ? err.message : String(err) });
+          return toolError(err instanceof Error ? err.message : String(err), "DB_ERROR");
         }
       },
     },

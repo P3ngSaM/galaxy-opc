@@ -1,0 +1,34 @@
+# Test files
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+__tests__/
+
+# Development files
+REVIEW.md
+tsconfig.json
+.gitignore
+.gitattributes
+
+# Scripts
+test-tools.sh
+test-tools2.sh
+test-tools3.sh
+fix-encoding.cjs
+
+# Database files
+*.db
+*.db-wal
+*.db-shm
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+node_modules/
+dist/
+coverage/

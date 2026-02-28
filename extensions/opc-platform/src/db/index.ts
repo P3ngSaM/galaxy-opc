@@ -60,4 +60,7 @@ export interface OpcDatabase {
   queryOne(sql: string, ...params: unknown[]): unknown | null;
   execute(sql: string, ...params: unknown[]): { changes: number };
   genId(): string;
+
+  /** 在事务中执行回调，失败自动回滚 */
+  transaction<T>(fn: () => T): T;
 }

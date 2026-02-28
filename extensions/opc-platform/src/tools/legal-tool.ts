@@ -5,7 +5,8 @@
 import { Type, type Static } from "@sinclair/typebox";
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import type { OpcDatabase } from "../db/index.js";
-import { json } from "../utils/tool-helper.js";
+import { BusinessWorkflows, VALID_DIRECTIONS } from "../opc/business-workflows.js";
+import { json, toolError } from "../utils/tool-helper.js";
 
 const LegalSchema = Type.Union([
   Type.Object({
@@ -14,6 +15,9 @@ const LegalSchema = Type.Union([
     title: Type.String({ description: "合同标题" }),
     counterparty: Type.String({ description: "签约对方" }),
     contract_type: Type.String({ description: "合同类型: 服务合同/采购合同/劳动合同/租赁合同/合作协议/NDA/其他" }),
+    direction: Type.Optional(Type.String({
+      description: "合同方向: sales(我方提供服务/产品,收钱) | procurement(我方采购,付钱) | outsourcing(外包/劳务) | partnership(合作协议)"
+    })),
     amount: Type.Optional(Type.Number({ description: "合同金额（元）" })),
     start_date: Type.Optional(Type.String({ description: "起始日期 (YYYY-MM-DD)" })),
     end_date: Type.Optional(Type.String({ description: "结束日期 (YYYY-MM-DD)" })),
@@ -102,14 +106,32 @@ export function registerLegalTool(api: OpenClawPluginApi, db: OpcDatabase): void
             case "create_contract": {
               const id = db.genId();
               const now = new Date().toISOString();
+              const direction = p.direction || "sales";
+              // 校验 direction 合法性
+              if (!BusinessWorkflows.validateDirection(direction)) {
+                return toolError(
+                  `无效的合同方向「${direction}」，合法值: ${VALID_DIRECTIONS.join(", ")}`,
+                  "INVALID_DIRECTION",
+                );
+              }
               db.execute(
-                `INSERT INTO opc_contracts (id, company_id, title, counterparty, contract_type, amount, start_date, end_date, status, key_terms, risk_notes, reminder_date, created_at, updated_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, ?, ?, ?)`,
-                id, p.company_id, p.title, p.counterparty, p.contract_type,
+                `INSERT INTO opc_contracts (id, company_id, title, counterparty, contract_type, direction, amount, start_date, end_date, status, key_terms, risk_notes, reminder_date, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?, ?, ?, ?, ?)`,
+                id, p.company_id, p.title, p.counterparty, p.contract_type, direction,
                 p.amount ?? 0, p.start_date ?? "", p.end_date ?? "",
                 p.key_terms ?? "", p.risk_notes ?? "", p.reminder_date ?? "", now, now,
               );
-              return json(db.queryOne("SELECT * FROM opc_contracts WHERE id = ?", id));
+              // 业务闭环：自动创建关联记录
+              const workflows = new BusinessWorkflows(db);
+              const autoCreated = workflows.afterContractCreated({
+                id, company_id: p.company_id, title: p.title,
+                counterparty: p.counterparty, contract_type: p.contract_type,
+                direction,
+                amount: p.amount ?? 0,
+                start_date: p.start_date ?? "", end_date: p.end_date ?? "",
+              });
+              const contract = db.queryOne("SELECT * FROM opc_contracts WHERE id = ?", id);
+              return json({ ...contract as object, _auto_created: autoCreated });
             }
 
             case "list_contracts": {
@@ -120,8 +142,11 @@ export function registerLegalTool(api: OpenClawPluginApi, db: OpcDatabase): void
               return json(db.query(sql, ...params2));
             }
 
-            case "get_contract":
-              return json(db.queryOne("SELECT * FROM opc_contracts WHERE id = ?", p.contract_id) ?? { error: "合同不存在" });
+            case "get_contract": {
+              const contract = db.queryOne("SELECT * FROM opc_contracts WHERE id = ?", p.contract_id);
+              if (!contract) return toolError("合同不存在", "CONTRACT_NOT_FOUND");
+              return json(contract);
+            }
 
             case "update_contract": {
               const fields: string[] = [];
@@ -133,7 +158,9 @@ export function registerLegalTool(api: OpenClawPluginApi, db: OpcDatabase): void
               fields.push("updated_at = ?"); values.push(new Date().toISOString());
               values.push(p.contract_id);
               db.execute(`UPDATE opc_contracts SET ${fields.join(", ")} WHERE id = ?`, ...values);
-              return json(db.queryOne("SELECT * FROM opc_contracts WHERE id = ?", p.contract_id) ?? { error: "合同不存在" });
+              const updated = db.queryOne("SELECT * FROM opc_contracts WHERE id = ?", p.contract_id);
+              if (!updated) return toolError("合同不存在", "CONTRACT_NOT_FOUND");
+              return json(updated);
             }
 
             case "contract_risk_check": {
@@ -166,7 +193,7 @@ export function registerLegalTool(api: OpenClawPluginApi, db: OpcDatabase): void
             case "contract_template": {
               const tpl = CONTRACT_TEMPLATES[p.contract_type];
               if (!tpl) {
-                return json({ error: `无此模板，可用: ${Object.keys(CONTRACT_TEMPLATES).join(", ")}` });
+                return toolError(`无此模板，可用: ${Object.keys(CONTRACT_TEMPLATES).join(", ")}`, "INVALID_INPUT");
               }
               return json(tpl);
             }
@@ -177,10 +204,10 @@ export function registerLegalTool(api: OpenClawPluginApi, db: OpcDatabase): void
             }
 
             default:
-              return json({ error: `未知操作: ${(p as { action: string }).action}` });
+              return toolError(`未知操作: ${(p as { action: string }).action}`, "UNKNOWN_ACTION");
           }
         } catch (err) {
-          return json({ error: err instanceof Error ? err.message : String(err) });
+          return toolError(err instanceof Error ? err.message : String(err), "DB_ERROR");
         }
       },
     },

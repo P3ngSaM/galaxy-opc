@@ -5,7 +5,7 @@
 import { Type, type Static } from "@sinclair/typebox";
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import type { OpcDatabase } from "../db/index.js";
-import { json } from "../utils/tool-helper.js";
+import { json, toolError } from "../utils/tool-helper.js";
 
 const ProcurementSchema = Type.Union([
   Type.Object({
@@ -123,7 +123,7 @@ export function registerProcurementTool(api: OpenClawPluginApi, db: OpcDatabase)
               if (p.status !== undefined) { sets.push("status = ?"); vals.push(p.status); }
               if (p.delivery_date !== undefined) { sets.push("delivery_date = ?"); vals.push(p.delivery_date); }
               if (p.notes !== undefined) { sets.push("notes = ?"); vals.push(p.notes); }
-              if (sets.length === 0) return json({ error: "未提供任何更新字段" });
+              if (sets.length === 0) return toolError("未提供任何更新字段", "VALIDATION_ERROR");
               vals.push(p.order_id);
               db.execute(`UPDATE opc_procurement_orders SET ${sets.join(", ")} WHERE id = ?`, ...vals);
               return json(db.queryOne("SELECT * FROM opc_procurement_orders WHERE id = ?", p.order_id));
@@ -177,10 +177,10 @@ export function registerProcurementTool(api: OpenClawPluginApi, db: OpcDatabase)
             }
 
             default:
-              return json({ error: `未知操作: ${(p as { action: string }).action}` });
+              return toolError(`未知操作: ${(p as { action: string }).action}`, "UNKNOWN_ACTION");
           }
         } catch (err) {
-          return json({ error: err instanceof Error ? err.message : String(err) });
+          return toolError(err instanceof Error ? err.message : String(err), "DB_ERROR");
         }
       },
     },

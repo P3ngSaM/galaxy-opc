@@ -5,6 +5,7 @@
  *   npx galaxy-opc          # 安装并初始化（首次使用）
  *   npx galaxy-opc setup    # 重新配置 AI 模型
  *   npx galaxy-opc start    # 启动服务
+ *   npx galaxy-opc doctor   # 诊断安装状态
  */
 
 import fs from "node:fs";
@@ -137,6 +138,8 @@ if (command === "start") {
   await cmdStart();
 } else if (command === "setup") {
   await cmdSetup();
+} else if (command === "doctor") {
+  await cmdDoctor();
 } else {
   await cmdInstall();
 }
@@ -165,6 +168,31 @@ ${bold(cyan("  ╚════════════════════�
   }
   console.log(green(`  ✓ Node.js v${process.versions.node}`));
 
+  // 检查 git 是否可用（macOS 没装 Xcode CLT 时 git 会失败）
+  const hasGit = checkTool("git");
+  if (!hasGit) {
+    if (process.platform === "darwin") {
+      console.log(yellow("\n  ! git 未安装 — macOS 需要先安装 Xcode Command Line Tools"));
+      console.log(dim("  正在尝试自动安装（弹窗后点击「安装」，等待完成）...\n"));
+      try {
+        execSync("xcode-select --install 2>/dev/null", { stdio: "inherit" });
+      } catch { /* 已安装时会报错，忽略 */ }
+      // 再次检测
+      if (!checkTool("git")) {
+        console.error(red("\n  ✗ git 仍不可用，请手动执行后重试:"));
+        console.error(gray("    xcode-select --install\n"));
+        process.exit(1);
+      }
+      console.log(green("  ✓ git 已就绪"));
+    } else {
+      console.error(red("\n  ✗ git 未安装，请先安装 git:"));
+      console.error(gray("    https://git-scm.com/downloads\n"));
+      process.exit(1);
+    }
+  } else {
+    console.log(green("  ✓ git 已安装"));
+  }
+
   // ── 步骤 2：安装 openclaw ────────────────────────────────────────────────
   separator();
   console.log(bold("  步骤 2 / 4  安装 OpenClaw 核心"));
@@ -175,18 +203,23 @@ ${bold(cyan("  ╚════════════════════�
     console.log(green(`  ✓ OpenClaw 已安装 (${ocVersion})`));
   } else {
     console.log(dim("  正在安装 OpenClaw（首次安装约 80MB+，使用国内镜像加速）...\n"));
-    // 临时覆盖 git url rewrite（有些机器把 https://github.com 重写到 ssh）
-    let gitRewriteSet = false;
-    try {
-      execSync("git config --global url.https://github.com/.insteadOf git@github.com:", { stdio: "ignore" });
-      gitRewriteSet = true;
-    } catch { /* ignore */ }
+    // 临时覆盖 git url rewrite（强制 SSH 协议转 HTTPS，覆盖两种格式）
+    const gitRewrites = [
+      ["url.https://github.com/.insteadOf", "git@github.com:"],
+      ["url.https://github.com/.insteadOf", "ssh://git@github.com/"],
+    ];
+    const gitRewritesSet = [];
+    for (const [key, val] of gitRewrites) {
+      try {
+        execSync(`git config --global ${key} "${val}"`, { stdio: "ignore" });
+        gitRewritesSet.push(key);
+      } catch { /* ignore */ }
+    }
 
     try {
       await runCommand("npm", [
         "install", "-g", "openclaw@latest",
         "--registry", "https://registry.npmmirror.com",
-        "--git-protocol", "https",
       ]);
       console.log(green("\n  ✓ OpenClaw 安装完成"));
     } catch {
@@ -195,8 +228,8 @@ ${bold(cyan("  ╚════════════════════�
       process.exit(1);
     } finally {
       // 还原 git 配置
-      if (gitRewriteSet) {
-        try { execSync("git config --global --unset url.https://github.com/.insteadOf", { stdio: "ignore" }); } catch { /* ignore */ }
+      for (const key of gitRewritesSet) {
+        try { execSync(`git config --global --unset-all ${key}`, { stdio: "ignore" }); } catch { /* ignore */ }
       }
     }
   }
@@ -217,6 +250,19 @@ ${bold(cyan("  ╚════════════════════�
     }
   } else {
     await installPlugin();
+  }
+
+  // ── 安装后自检 ────────────────────────────────────────────────────────
+  const checks = verifyInstall();
+  const failures = checks.filter((c) => !c.ok && c.check !== "AI 模型" && c.check !== "Gateway Token");
+  if (failures.length > 0) {
+    separator();
+    console.log(yellow("\n  安装自检发现问题:"));
+    for (const f of failures) {
+      console.log(`  ${red("✗")} ${f.check}: ${f.msg}`);
+      if (f.fix) console.log(`    ${gray("修复: " + f.fix)}`);
+    }
+    console.log(gray("\n  可运行 npx galaxy-opc doctor 查看完整诊断\n"));
   }
 
   // ── 步骤 4：配置模型 ────────────────────────────────────────────────────
@@ -451,6 +497,128 @@ async function cmdSetup() {
 `);
   if (defaultModel) console.log(`  当前模型: ${cyan(defaultModel)}\n`);
   separator("═");
+}
+
+// ─── 安装后自检 ──────────────────────────────────────────────────────────────
+function verifyInstall() {
+  const issues = [];
+
+  // 检查 openclaw 命令
+  const ocVer = getOpenclawVersion();
+  if (!ocVer) {
+    issues.push({
+      check: "OpenClaw 命令",
+      ok: false,
+      msg: "openclaw 命令不可用",
+      fix: "npm install -g openclaw@latest --registry https://registry.npmmirror.com",
+    });
+  } else {
+    issues.push({ check: "OpenClaw 命令", ok: true, msg: `已安装 (${ocVer})` });
+  }
+
+  // 检查插件目录
+  const pluginDir = path.join(STATE_DIR, "extensions", "galaxy-opc-plugin");
+  const pluginEntry = path.join(pluginDir, "index.ts");
+  if (fs.existsSync(pluginEntry)) {
+    issues.push({ check: "OPC 插件", ok: true, msg: pluginDir });
+  } else {
+    issues.push({
+      check: "OPC 插件",
+      ok: false,
+      msg: "插件目录不存在或缺少入口文件",
+      fix: "openclaw plugins install galaxy-opc-plugin",
+    });
+  }
+
+  // 检查配置文件
+  if (fs.existsSync(CONFIG_PATH)) {
+    const cfg = readJson(CONFIG_PATH);
+    issues.push({ check: "配置文件", ok: true, msg: CONFIG_PATH });
+
+    // 检查模型配置
+    const model = cfg.agents?.defaults?.model?.primary;
+    if (model) {
+      issues.push({ check: "AI 模型", ok: true, msg: model });
+    } else {
+      issues.push({
+        check: "AI 模型",
+        ok: false,
+        msg: "未配置默认模型",
+        fix: "npx galaxy-opc setup",
+      });
+    }
+
+    // 检查 gateway token
+    const token = cfg.gateway?.auth?.token;
+    if (token && token !== "change-me-to-a-long-random-token") {
+      issues.push({ check: "Gateway Token", ok: true, msg: "已配置" });
+    } else {
+      issues.push({
+        check: "Gateway Token",
+        ok: false,
+        msg: "未配置访问令牌",
+        fix: "npx galaxy-opc setup",
+      });
+    }
+  } else {
+    issues.push({
+      check: "配置文件",
+      ok: false,
+      msg: "openclaw.json 不存在",
+      fix: "npx galaxy-opc setup",
+    });
+  }
+
+  // 检查数据库目录可写
+  const dbDir = path.join(STATE_DIR, "opc-platform");
+  if (fs.existsSync(dbDir)) {
+    issues.push({ check: "数据库目录", ok: true, msg: dbDir });
+  } else {
+    // 尝试创建
+    try {
+      fs.mkdirSync(dbDir, { recursive: true });
+      issues.push({ check: "数据库目录", ok: true, msg: `已创建 ${dbDir}` });
+    } catch {
+      issues.push({
+        check: "数据库目录",
+        ok: false,
+        msg: "无法创建数据库目录",
+        fix: `mkdir -p ${dbDir}`,
+      });
+    }
+  }
+
+  return issues;
+}
+
+// ─── doctor 命令 ──────────────────────────────────────────────────────────────
+async function cmdDoctor() {
+  console.log(`\n${bold(cyan("  Galaxy OPC — 安装诊断"))}\n`);
+  separator();
+
+  const issues = verifyInstall();
+  let hasError = false;
+
+  for (const item of issues) {
+    if (item.ok) {
+      console.log(`  ${green("✓")} ${bold(item.check)}: ${item.msg}`);
+    } else {
+      hasError = true;
+      console.log(`  ${red("✗")} ${bold(item.check)}: ${item.msg}`);
+      if (item.fix) {
+        console.log(`    ${gray("修复: " + item.fix)}`);
+      }
+    }
+  }
+
+  separator();
+  if (hasError) {
+    console.log(`\n  ${yellow("存在问题，请按上述提示修复。")}\n`);
+    process.exit(1);
+  } else {
+    console.log(`\n  ${green("所有检查通过，系统就绪！")}`);
+    console.log(`  ${dim("启动命令: openclaw gateway")}\n`);
+  }
 }
 
 // ─── start 命令 ──────────────────────────────────────────────────────────────

@@ -5,7 +5,7 @@
 import { Type, type Static } from "@sinclair/typebox";
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import type { OpcDatabase } from "../db/index.js";
-import { json } from "../utils/tool-helper.js";
+import { json, toolError } from "../utils/tool-helper.js";
 
 const InvestmentSchema = Type.Union([
   Type.Object({
@@ -158,7 +158,7 @@ export function registerInvestmentTool(api: OpenClawPluginApi, db: OpcDatabase):
               if (p.lead_investor !== undefined) { sets.push("lead_investor = ?"); vals.push(p.lead_investor); }
               if (p.close_date !== undefined) { sets.push("close_date = ?"); vals.push(p.close_date); }
               if (p.notes !== undefined) { sets.push("notes = ?"); vals.push(p.notes); }
-              if (sets.length === 0) return json({ error: "未提供任何更新字段" });
+              if (sets.length === 0) return toolError("未提供任何更新字段", "VALIDATION_ERROR");
               vals.push(p.round_id);
               db.execute(`UPDATE opc_investment_rounds SET ${sets.join(", ")} WHERE id = ?`, ...vals);
               return json(db.queryOne("SELECT * FROM opc_investment_rounds WHERE id = ?", p.round_id));
@@ -187,10 +187,10 @@ export function registerInvestmentTool(api: OpenClawPluginApi, db: OpcDatabase):
             }
 
             default:
-              return json({ error: `未知操作: ${(p as { action: string }).action}` });
+              return toolError(`未知操作: ${(p as { action: string }).action}`, "UNKNOWN_ACTION");
           }
         } catch (err) {
-          return json({ error: err instanceof Error ? err.message : String(err) });
+          return toolError(err instanceof Error ? err.message : String(err), "DB_ERROR");
         }
       },
     },

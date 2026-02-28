@@ -9,8 +9,6 @@
  * 防重复：同一公司同一类别同一周期内不重复写入。
  */
 
-import https from "node:https";
-import http from "node:http";
 import type { OpcDatabase } from "../db/index.js";
 
 type AlertRow = { id: string; company_id: string; category: string; title: string };
@@ -68,42 +66,9 @@ function createAlert(db: OpcDatabase, params: {
   );
 }
 
-/** 向飞书/企业微信 Webhook 推送一条文本消息（fire-and-forget） */
-function sendWebhook(url: string, text: string, log: (msg: string) => void): void {
-  try {
-    const isFeishu = url.includes("feishu.cn") || url.includes("larksuite.com");
-    const body = isFeishu
-      ? JSON.stringify({ msg_type: "text", content: { text } })
-      : JSON.stringify({ msgtype: "text", text: { content: text } });
-
-    const parsed = new URL(url);
-    const transport = parsed.protocol === "https:" ? https : http;
-    const req = transport.request(
-      {
-        hostname: parsed.hostname,
-        port: parsed.port || (parsed.protocol === "https:" ? 443 : 80),
-        path: parsed.pathname + parsed.search,
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body) },
-      },
-      (res) => {
-        res.resume(); // drain response
-        if (res.statusCode && res.statusCode >= 400) {
-          log(`opc-reminder: Webhook 响应异常 (${res.statusCode})`);
-        }
-      },
-    );
-    req.on("error", (err) => log(`opc-reminder: Webhook 请求失败: ${err.message}`));
-    req.write(body);
-    req.end();
-  } catch (err) {
-    log(`opc-reminder: Webhook 发送异常: ${err instanceof Error ? err.message : String(err)}`);
-  }
-}
-
 // ── 检查项 1：税务申报到期提醒 ────────────────────────────────
 
-function checkTaxDeadlines(db: OpcDatabase, log: (msg: string) => void, webhookUrl?: string): number {
+function checkTaxDeadlines(db: OpcDatabase, log: (msg: string) => void, _webhookUrl?: string): number {
   let count = 0;
   const rows = db.query(
     `SELECT t.*, c.name as company_name FROM opc_tax_filings t
@@ -130,14 +95,13 @@ function checkTaxDeadlines(db: OpcDatabase, log: (msg: string) => void, webhookU
     createAlert(db, { companyId: row.company_id, title, message, severity, category: "tax" });
     count++;
     log(`opc-reminder: 税务提醒 [${row.company_name}] ${title}`);
-    if (webhookUrl) sendWebhook(webhookUrl, `【税务提醒】${title}\n${message}`, log);
   }
   return count;
 }
 
 // ── 检查项 2：合同到期提醒 ─────────────────────────────────────
 
-function checkContractExpiry(db: OpcDatabase, log: (msg: string) => void, webhookUrl?: string): number {
+function checkContractExpiry(db: OpcDatabase, log: (msg: string) => void, _webhookUrl?: string): number {
   let count = 0;
   const rows = db.query(
     `SELECT t.*, c.name as company_name FROM opc_contracts t
@@ -164,14 +128,13 @@ function checkContractExpiry(db: OpcDatabase, log: (msg: string) => void, webhoo
     createAlert(db, { companyId: row.company_id, title, message, severity, category: "contract" });
     count++;
     log(`opc-reminder: 合同提醒 [${row.company_name}] ${title}`);
-    if (webhookUrl) sendWebhook(webhookUrl, `【合同提醒】${title}\n${message}`, log);
   }
   return count;
 }
 
 // ── 检查项 3：现金流预警 ──────────────────────────────────────
 
-function checkCashFlow(db: OpcDatabase, log: (msg: string) => void, webhookUrl?: string): number {
+function checkCashFlow(db: OpcDatabase, log: (msg: string) => void, _webhookUrl?: string): number {
   let count = 0;
   const start = daysAgo(30);
   const companies = db.query(
@@ -207,14 +170,13 @@ function checkCashFlow(db: OpcDatabase, log: (msg: string) => void, webhookUrl?:
     });
     count++;
     log(`opc-reminder: 现金流预警 [${company.name}] 净流出 ${Math.abs(net).toLocaleString()} 元`);
-    if (webhookUrl) sendWebhook(webhookUrl, `【现金流预警】${company.name} 近30天净流出 ${Math.abs(net).toLocaleString()} 元，请及时关注资金状况。`, log);
   }
   return count;
 }
 
 // ── 检查项 4：投资轮次跟进提醒 ──────────────────────────────────
 
-function checkInvestmentRounds(db: OpcDatabase, log: (msg: string) => void, webhookUrl?: string): number {
+function checkInvestmentRounds(db: OpcDatabase, log: (msg: string) => void, _webhookUrl?: string): number {
   let count = 0;
   // 找出 close_date 在7天内的活跃融资轮
   const rows = db.query(
@@ -241,7 +203,6 @@ function checkInvestmentRounds(db: OpcDatabase, log: (msg: string) => void, webh
     createAlert(db, { companyId: row.company_id, title, message, severity, category: "investment" });
     count++;
     log(`opc-reminder: 融资提醒 [${row.company_name}] ${title}`);
-    if (webhookUrl) sendWebhook(webhookUrl, `【融资提醒】${title}\n${message}`, log);
   }
   return count;
 }

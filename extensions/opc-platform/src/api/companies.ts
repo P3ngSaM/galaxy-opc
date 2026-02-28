@@ -17,6 +17,7 @@ import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import type { OpcDatabase } from "../db/index.js";
 import { CompanyManager } from "../opc/company-manager.js";
 import type { OpcCompanyStatus } from "../opc/types.js";
+import { authenticateRequest, apiRateLimiter } from "./middleware.js";
 
 const OPC_API_PREFIX = "/opc/api/companies";
 
@@ -55,7 +56,7 @@ function parseJson(body: string): Record<string, unknown> | null {
   }
 }
 
-export function registerCompanyRoutes(api: OpenClawPluginApi, db: OpcDatabase): void {
+export function registerCompanyRoutes(api: OpenClawPluginApi, db: OpcDatabase, gatewayToken?: string): void {
   const manager = new CompanyManager(db);
 
   api.registerHttpHandler(async (req, res) => {
@@ -69,6 +70,16 @@ export function registerCompanyRoutes(api: OpenClawPluginApi, db: OpcDatabase): 
     // 只处理 /opc/api/companies 开头的请求
     if (!pathname.startsWith(OPC_API_PREFIX)) {
       return false;
+    }
+
+    // 限流检查
+    if (!apiRateLimiter.check(req, res)) {
+      return true;
+    }
+
+    // 认证检查
+    if (!authenticateRequest(req, res, gatewayToken)) {
+      return true;
     }
 
     const subPath = pathname.slice(OPC_API_PREFIX.length);

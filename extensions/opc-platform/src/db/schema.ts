@@ -57,9 +57,26 @@ export const OPC_TABLES = {
       tags TEXT NOT NULL DEFAULT '[]',
       notes TEXT NOT NULL DEFAULT '',
       last_contact_date TEXT NOT NULL DEFAULT (date('now')),
+      pipeline_stage TEXT NOT NULL DEFAULT 'lead',
+      follow_up_date TEXT NOT NULL DEFAULT '',
+      deal_value REAL NOT NULL DEFAULT 0,
+      source TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(company_id, name),
       FOREIGN KEY (company_id) REFERENCES opc_companies(id)
+    )
+  `,
+
+  contact_interactions: `
+    CREATE TABLE IF NOT EXISTS opc_contact_interactions (
+      id TEXT PRIMARY KEY,
+      contact_id TEXT NOT NULL,
+      company_id TEXT NOT NULL,
+      interaction_type TEXT NOT NULL DEFAULT 'note',
+      content TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (contact_id) REFERENCES opc_contacts(id)
     )
   `,
   // ── Phase 2 表 ────────────────────────────────────────────
@@ -108,6 +125,7 @@ export const OPC_TABLES = {
       title TEXT NOT NULL,
       counterparty TEXT NOT NULL DEFAULT '',
       contract_type TEXT NOT NULL DEFAULT '',
+      direction TEXT NOT NULL DEFAULT 'sales',
       amount REAL NOT NULL DEFAULT 0,
       start_date TEXT NOT NULL DEFAULT '',
       end_date TEXT NOT NULL DEFAULT '',
@@ -154,6 +172,9 @@ export const OPC_TABLES = {
       published_date TEXT NOT NULL DEFAULT '',
       tags TEXT NOT NULL DEFAULT '[]',
       metrics TEXT NOT NULL DEFAULT '{}',
+      reviewer TEXT NOT NULL DEFAULT '',
+      review_notes TEXT NOT NULL DEFAULT '',
+      approved_at TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
       FOREIGN KEY (company_id) REFERENCES opc_companies(id)
@@ -437,6 +458,129 @@ export const OPC_TABLES = {
     )
   `,
 
+  // ── AI 员工任务追踪表 ───────────────────────────────────────────
+
+  staff_tasks: `
+    CREATE TABLE IF NOT EXISTS opc_staff_tasks (
+      id TEXT PRIMARY KEY,
+      company_id TEXT NOT NULL,
+      staff_role TEXT NOT NULL,
+      title TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'pending',
+      priority TEXT NOT NULL DEFAULT 'normal',
+      task_type TEXT NOT NULL DEFAULT 'manual',
+      schedule TEXT NOT NULL DEFAULT 'on_demand',
+      result_summary TEXT NOT NULL DEFAULT '',
+      result_data TEXT NOT NULL DEFAULT '{}',
+      session_key TEXT NOT NULL DEFAULT '',
+      assigned_at TEXT NOT NULL DEFAULT (datetime('now')),
+      started_at TEXT NOT NULL DEFAULT '',
+      completed_at TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (company_id) REFERENCES opc_companies(id)
+    )
+  `,
+
+  // ── 主动智能系统表 ─────────────────────────────────────────────
+
+  insights: `
+    CREATE TABLE IF NOT EXISTS opc_insights (
+      id TEXT PRIMARY KEY,
+      company_id TEXT NOT NULL,
+      insight_type TEXT NOT NULL DEFAULT 'data_gap',
+      category TEXT NOT NULL DEFAULT 'ops',
+      priority INTEGER NOT NULL DEFAULT 50,
+      title TEXT NOT NULL,
+      message TEXT NOT NULL DEFAULT '',
+      action_hint TEXT NOT NULL DEFAULT '',
+      staff_role TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'active',
+      expires_at TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (company_id) REFERENCES opc_companies(id)
+    )
+  `,
+
+  celebrations: `
+    CREATE TABLE IF NOT EXISTS opc_celebrations (
+      id TEXT PRIMARY KEY,
+      company_id TEXT NOT NULL,
+      celebration_type TEXT NOT NULL,
+      title TEXT NOT NULL,
+      message TEXT NOT NULL DEFAULT '',
+      metric_value REAL NOT NULL DEFAULT 0,
+      shown INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (company_id) REFERENCES opc_companies(id)
+    )
+  `,
+
+  company_stage: `
+    CREATE TABLE IF NOT EXISTS opc_company_stage (
+      company_id TEXT PRIMARY KEY,
+      stage TEXT NOT NULL DEFAULT 'idea',
+      stage_label TEXT NOT NULL DEFAULT '构想阶段',
+      confidence REAL NOT NULL DEFAULT 0,
+      factors_json TEXT NOT NULL DEFAULT '{}',
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (company_id) REFERENCES opc_companies(id)
+    )
+  `,
+
+  briefings: `
+    CREATE TABLE IF NOT EXISTS opc_briefings (
+      id TEXT PRIMARY KEY,
+      company_id TEXT NOT NULL,
+      briefing_date TEXT NOT NULL DEFAULT (date('now')),
+      stage TEXT NOT NULL DEFAULT '',
+      health_score REAL NOT NULL DEFAULT 0,
+      summary_json TEXT NOT NULL DEFAULT '{}',
+      insights_json TEXT NOT NULL DEFAULT '[]',
+      next_steps_json TEXT NOT NULL DEFAULT '[]',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(company_id, briefing_date),
+      FOREIGN KEY (company_id) REFERENCES opc_companies(id)
+    )
+  `,
+
+  // ── 文档生成表 ─────────────────────────────────────────────────
+
+  documents: `
+    CREATE TABLE IF NOT EXISTS opc_documents (
+      id TEXT PRIMARY KEY,
+      company_id TEXT NOT NULL,
+      doc_type TEXT NOT NULL DEFAULT 'contract',
+      title TEXT NOT NULL,
+      template_key TEXT NOT NULL DEFAULT '',
+      content TEXT NOT NULL DEFAULT '',
+      variables TEXT NOT NULL DEFAULT '{}',
+      version INTEGER NOT NULL DEFAULT 1,
+      status TEXT NOT NULL DEFAULT 'draft',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (company_id) REFERENCES opc_companies(id)
+    )
+  `,
+
+  // ── 发票明细行表 ───────────────────────────────────────────────
+
+  invoice_items: `
+    CREATE TABLE IF NOT EXISTS opc_invoice_items (
+      id TEXT PRIMARY KEY,
+      invoice_id TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      quantity REAL NOT NULL DEFAULT 1,
+      unit_price REAL NOT NULL DEFAULT 0,
+      amount REAL NOT NULL DEFAULT 0,
+      tax_rate REAL NOT NULL DEFAULT 0,
+      tax_amount REAL NOT NULL DEFAULT 0,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      FOREIGN KEY (invoice_id) REFERENCES opc_invoices(id)
+    )
+  `,
+
   // ── OPB 画布表 ───────────────────────────────────────────────
 
   opb_canvas: `
@@ -513,6 +657,26 @@ export const OPC_INDEXES = [
   "CREATE INDEX IF NOT EXISTS idx_financing_fees_transfer ON opc_financing_fees(transfer_id)",
   "CREATE INDEX IF NOT EXISTS idx_financing_fees_status ON opc_financing_fees(status)",
   "CREATE INDEX IF NOT EXISTS idx_staff_config_company ON opc_staff_config(company_id)",
+  // AI 员工任务
+  "CREATE INDEX IF NOT EXISTS idx_staff_tasks_company ON opc_staff_tasks(company_id)",
+  "CREATE INDEX IF NOT EXISTS idx_staff_tasks_role ON opc_staff_tasks(staff_role)",
+  "CREATE INDEX IF NOT EXISTS idx_staff_tasks_status ON opc_staff_tasks(status)",
+  // session_key 索引由 migration v9 创建（旧库此时列尚不存在）
+  // CRM（新表索引可在此创建，contacts 列索引由 migration v10 创建，旧库此时列尚不存在）
+  "CREATE INDEX IF NOT EXISTS idx_interactions_contact ON opc_contact_interactions(contact_id)",
+  // Documents
+  "CREATE INDEX IF NOT EXISTS idx_documents_company ON opc_documents(company_id)",
+  "CREATE INDEX IF NOT EXISTS idx_documents_type ON opc_documents(doc_type)",
+  // Invoice Items
+  "CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice ON opc_invoice_items(invoice_id)",
   // OPB Canvas
   "CREATE INDEX IF NOT EXISTS idx_opb_canvas_company ON opc_opb_canvas(company_id)",
+  // 主动智能系统
+  "CREATE INDEX IF NOT EXISTS idx_insights_company ON opc_insights(company_id)",
+  "CREATE INDEX IF NOT EXISTS idx_insights_status ON opc_insights(status)",
+  "CREATE INDEX IF NOT EXISTS idx_insights_type ON opc_insights(insight_type)",
+  "CREATE INDEX IF NOT EXISTS idx_insights_expires ON opc_insights(expires_at)",
+  "CREATE INDEX IF NOT EXISTS idx_celebrations_company ON opc_celebrations(company_id)",
+  "CREATE INDEX IF NOT EXISTS idx_celebrations_shown ON opc_celebrations(shown)",
+  "CREATE INDEX IF NOT EXISTS idx_briefings_company_date ON opc_briefings(company_id, briefing_date)",
 ];

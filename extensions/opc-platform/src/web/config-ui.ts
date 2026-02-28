@@ -20,7 +20,6 @@ const CUSTOM_SKILLS_DIR = path.join(os.homedir(), ".openclaw", "custom-skills");
 function sendJson(res: ServerResponse, data: unknown, status = 200): void {
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
-    "Access-Control-Allow-Origin": "*",
   });
   res.end(JSON.stringify(data));
 }
@@ -515,9 +514,9 @@ function handleAlertDismiss(db: OpcDatabase, alertId: string): unknown {
 
 /* ── HTML builder ─────────────────────────────────────────── */
 
-function buildPageHtml(): string {
+function buildPageHtml(authRequired = false): string {
   const toolsJson = JSON.stringify(TOOL_NAMES);
-  return '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>' + "\u661F\u73AFOPC\u4E2D\u5FC3 - \u7BA1\u7406\u540E\u53F0" + '</title>\n<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">\n<style>\n' + getCss() + '\n</style>\n</head>\n<body>\n' + getBodyHtml() + '\n<div class="toast" id="toast"></div>\n<script>\nvar TOOLS = ' + toolsJson + ';\n' + getJs() + '\n</script>\n</body>\n</html>';
+  return '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>' + "\u661F\u73AFOPC\u4E2D\u5FC3 - \u7BA1\u7406\u540E\u53F0" + '</title>\n<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">\n<style>\n' + getCss() + '\n</style>\n</head>\n<body>\n' + getBodyHtml() + '\n<div class="toast" id="toast"></div>\n<script>\nvar TOOLS = ' + toolsJson + ';\nvar _authRequired = ' + (authRequired ? 'true' : 'false') + ';\n' + getJs() + '\n</script>\n</body>\n</html>';
 }
 
 function getCss(): string {
@@ -752,7 +751,33 @@ function getCss(): string {
   + "\n.view:not(.print-target){display:none!important}"
   + "\n.card{break-inside:avoid;box-shadow:none;border:1px solid #e5e7eb}"
   + "\n.stat-card{break-inside:avoid}"
-  + "\n}";
+  + "\n}"
+  // Feishu / Channel form styles
+  + "\n.ch-form{display:grid;gap:20px;max-width:520px}"
+  + "\n.ch-field{display:flex;flex-direction:column;gap:5px}"
+  + "\n.ch-field label{font-size:13px;font-weight:600;color:var(--tx);display:flex;align-items:baseline;gap:6px}"
+  + "\n.ch-field label .hint{font-weight:400;color:var(--tx3);font-size:12px}"
+  + "\n.ch-field input,.ch-field select{padding:10px 14px;border:1.5px solid var(--bd);border-radius:8px;font-size:14px;font-family:var(--font);outline:none;transition:border-color .2s,box-shadow .2s;background:var(--card);color:var(--tx);width:100%}"
+  + "\n.ch-field input:focus,.ch-field select:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(15,23,42,.08)}"
+  + "\n.ch-field input::placeholder{color:var(--tx3);font-size:13px}"
+  + "\n.ch-field select{appearance:none;-webkit-appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%239ca3af' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;cursor:pointer}"
+  + "\n.ch-status-dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex-shrink:0}"
+  + "\n.ch-status-row{display:flex;align-items:center;gap:10px;margin-bottom:16px}"
+  + "\n.ch-status-row strong{font-size:15px}"
+  + "\n.ch-info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}"
+  + "\n.ch-info-item{background:var(--bg);border-radius:8px;padding:12px 14px}"
+  + "\n.ch-info-item .ch-info-label{font-size:11px;color:var(--tx3);text-transform:uppercase;letter-spacing:0.04em;font-weight:500;margin-bottom:4px}"
+  + "\n.ch-info-item .ch-info-value{font-size:14px;font-weight:500;color:var(--tx)}"
+  + "\n.ch-guide-box{background:var(--bg);border-radius:10px;padding:24px;font-size:13px;line-height:2}"
+  + "\n.ch-guide-box ol{padding-left:20px;margin:0}"
+  + "\n.ch-guide-box li{margin-bottom:14px;padding-left:4px}"
+  + "\n.ch-guide-box li strong{color:var(--tx)}"
+  + "\n.ch-guide-box .step-hint{display:block;color:var(--tx3);font-size:12px;margin-top:2px}"
+  + "\n.ch-guide-box code{background:#e8ecf1;padding:2px 8px;border-radius:5px;font-size:12px;font-family:'SF Mono',Consolas,monospace;color:var(--pri-l)}"
+  + "\n.ch-section-title{font-size:17px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:16px}"
+  + "\n.ch-future{margin-top:32px;padding-top:24px;border-top:1px solid var(--bd)}"
+  + "\n.ch-future h2{font-size:15px;font-weight:600;color:var(--tx3);margin-bottom:6px}"
+  + "\n.ch-future p{color:var(--tx3);font-size:13px}";
 }
 
 function getBodyHtml(): string {
@@ -769,6 +794,7 @@ function getBodyHtml(): string {
   + '<a data-view="canvas"><span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="14" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 5h6M5 8h6M5 11h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="11" r="1.5" fill="currentColor"/></svg></span> ' + "OPB \u753B\u5E03" + '</a>'
   + '<a data-view="finance"><span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12l3-4 3 2 4-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 14h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span> ' + "\u8D22\u52A1\u603B\u89C8" + '</a>'
   + '<a data-view="monitoring"><span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span> ' + "\u76D1\u63A7\u4E2D\u5FC3" + '</a>'
+  + '<a data-view="feishu"><span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8.5C2.5 5 5 3 7.5 2.5c-1 2-1.2 4-.2 6.5L10.5 13l-3.5-1.5C4.5 12.5 2 11.5 1 8.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="12.5" cy="5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M12.5 4v2M11.5 5h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span> ' + "\u9891\u9053" + '</a>'
   + '<a data-view="tools"><span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span> ' + "\u5DE5\u5177\u7BA1\u7406" + '</a>'
   + '<a data-view="closure"><span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L14 4V8C14 11.3 11.3 14.3 8 15C4.7 14.3 2 11.3 2 8V4L8 1Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M5.5 8l1.5 1.5L10.5 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span> ' + "\u8D44\u91D1\u95ED\u73AF" + '</a>'
   + '<a data-view="guide"><span class="icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h12v12H2z" stroke="currentColor" stroke-width="1.5" rx="1"/><path d="M5 5h6M5 8h6M5 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span> ' + "\u4F7F\u7528\u6307\u5357" + '</a>'
@@ -780,8 +806,8 @@ function getBodyHtml(): string {
   + '<div id="view-company-detail" class="view"><div id="company-detail-content"><div class="skeleton" style="height:200px"></div></div></div>'
   + '<div id="view-finance" class="view"><div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start"><div><h1>' + "\u8D22\u52A1\u603B\u89C8" + '</h1><p>' + "\u5E73\u53F0\u6574\u4F53\u8D22\u52A1\u6570\u636E\u5206\u6790" + '</p></div><button class="btn-pdf" onclick="printView(\'finance\')">&#128438; \u5bfc\u51fa PDF</button></div><div id="finance-content"><div class="skeleton" style="height:200px"></div></div></div>'
   + '<div id="view-monitoring" class="view"><div class="page-header"><h1>' + "\u76D1\u63A7\u4E2D\u5FC3" + '</h1><p>' + "\u544A\u8B66\u7BA1\u7406\u4E0E\u8FD0\u8425\u6307\u6807\u76D1\u63A7" + '</p></div><div id="monitoring-content"><div class="skeleton" style="height:200px"></div></div></div>'
+  + '<div id="view-feishu" class="view"><div class="page-header"><h1>' + "\u9891\u9053" + '</h1><p>' + "\u8FDE\u63A5\u98DE\u4E66\u3001\u5FAE\u4FE1\u7B49\u5E73\u53F0\uFF0C\u5728\u804A\u5929\u4E2D\u76F4\u63A5\u7BA1\u7406\u4F60\u7684\u516C\u53F8" + '</p></div><div id="feishu-content"><div class="skeleton" style="height:200px"></div></div></div>'
   + '<div id="view-tools" class="view"><div class="page-header"><h1>' + "\u5DE5\u5177\u7BA1\u7406" + '</h1><p>' + "\u542F\u7528\u3001\u914D\u7F6E\u5404\u529F\u80FD\u6A21\u5757\uFF0C\u81EA\u5B9A\u4E49\u63D0\u793A\u8BCD\u548C\u4F18\u5148\u7EA7" + '</p></div><div id="tool-list"></div>'
-  + '<div id="webhook-section" class="card" style="margin-top:24px"><div class="card-header"><h3 style="margin:0">' + "\u544A\u8B66 Webhook \u63A8\u9001" + '</h3></div><div class="card-body"><p style="color:var(--tx2);font-size:14px;margin-bottom:12px">' + "\u652F\u6301\u98DE\u4E66\u548C\u4F01\u4E1A\u5FAE\u4FE1 Webhook\uFF0C\u5F53\u6709\u65B0\u544A\u8B66\u65F6\u5B9E\u65F6\u63A8\u9001\u901A\u77E5\u3002\u7559\u7A7A\u5219\u4E0D\u63A8\u9001\u3002" + '</p><div style="display:flex;gap:8px;align-items:center"><input id="webhook-url-input" type="url" class="form-input" placeholder="https://open.feishu.cn/..." style="flex:1"><button class="btn btn-primary" onclick="saveWebhookUrl()" style="white-space:nowrap">' + "\u4FDD\u5B58" + '</button><button class="btn" onclick="testWebhook()" style="white-space:nowrap">' + "\u6D4B\u8BD5" + '</button></div></div></div>'
   + '</div>'
   + '<div id="view-guide" class="view"><div id="guide-content"></div></div>'
   + '<div id="view-canvas" class="view"><div class="page-header"><h1>' + "OPB \u4E00\u4EBA\u4F01\u4E1A\u753B\u5E03" + '</h1><p>' + "\u57FA\u4E8E\u300A\u4E00\u4EBA\u4F01\u4E1A\u65B9\u6CD5\u8BBA 2.0\u300B\u7684 16 \u6A21\u5757\u6218\u7565\u753B\u5E03" + '</p></div><div style="margin-bottom:20px"><div style="position:relative;display:inline-block;min-width:260px"><select id="canvas-company-select" onchange="loadCanvas()" style="appearance:none;-webkit-appearance:none;width:100%;padding:10px 40px 10px 16px;font-size:14px;font-weight:500;color:var(--tx);background:var(--card);border:1.5px solid var(--bd);border-radius:8px;cursor:pointer;outline:none;font-family:var(--font);box-shadow:0 1px 3px rgba(0,0,0,.06)"><option value="">' + "\u2014\u00A0\u00A0\u9009\u62E9\u516C\u53F8\u00A0\u00A0\u2014" + '</option></select><span style="pointer-events:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--tx2)"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div><div id="canvas-content"></div></div>'
@@ -791,12 +817,50 @@ function getBodyHtml(): string {
 }
 
 function getJs(): string {
-  return "if(!localStorage.getItem('openclaw.i18n.locale')){localStorage.setItem('openclaw.i18n.locale','zh-CN');}"
+  return "/* Token management */"
+  + "\n(function(){"
+  + "var p=new URLSearchParams(window.location.search);"
+  + "var t=p.get('token');"
+  + "if(t){sessionStorage.setItem('opc_token',t);p.delete('token');"
+  + "var newUrl=window.location.pathname;"
+  + "var qs=p.toString();"
+  + "if(qs)newUrl+='?'+qs;"
+  + "window.history.replaceState({},'',newUrl);}"
+  + "})();"
+  + "\nvar _opcToken=sessionStorage.getItem('opc_token')||'';"
+  + "\nvar _origFetch=window.fetch;"
+  + "\nwindow.fetch=function(url,opts){"
+  + "opts=opts||{};"
+  + "if(_opcToken){"
+  + "opts.headers=opts.headers||{};"
+  + "if(typeof opts.headers==='object'&&!(opts.headers instanceof Headers)){"
+  + "opts.headers['Authorization']='Bearer '+_opcToken;"
+  + "}}"
+  + "return _origFetch.call(window,url,opts).then(function(r){"
+  + "if(r.status===401){sessionStorage.removeItem('opc_token');_opcToken='';showLoginPage();}return r;"
+  + "});};"
+  + "\nfunction showLoginPage(){"
+  + "document.querySelector('.layout').innerHTML="
+  + "'<div style=\"display:flex;align-items:center;justify-content:center;width:100%;min-height:100vh;background:var(--bg)\">"
+  + "<div style=\"background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:48px;max-width:380px;width:100%;text-align:center\">"
+  + "<h2 style=\"font-size:20px;font-weight:700;margin-bottom:8px\">\\u661F\\u73AFOPC\\u4E2D\\u5FC3</h2>"
+  + "<p style=\"color:var(--tx3);font-size:13px;margin-bottom:24px\">\\u8BF7\\u8F93\\u5165\\u8BBF\\u95EE\\u4EE4\\u724C</p>"
+  + "<input id=\"login-token\" type=\"password\" placeholder=\"Gateway Token\" style=\"width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:6px;font-size:14px;margin-bottom:16px;outline:none\"/>"
+  + "<button onclick=\"doLogin()\" style=\"width:100%;padding:10px;background:var(--pri);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer\">\\u767B\\u5F55</button>"
+  + "</div></div>';}"
+  + "\nfunction doLogin(){"
+  + "var v=document.getElementById('login-token').value.trim();"
+  + "if(!v)return;"
+  + "sessionStorage.setItem('opc_token',v);_opcToken=v;"
+  + "window.location.reload();}"
+  + "\nif(_authRequired&&!_opcToken&&window.location.pathname.indexOf('/opc/admin')===0){"
+  + "document.addEventListener('DOMContentLoaded',function(){showLoginPage();});}"
+  + "\nif(!localStorage.getItem('openclaw.i18n.locale')){localStorage.setItem('openclaw.i18n.locale','zh-CN');}"
   + "\nvar toolConfig={};"
   + "var companiesState={search:'',status:'',page:1};"
   + "var currentView='dashboard';"
   + "\nfunction esc(s){if(s===null||s===undefined)return '';s=String(s);return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#x27;');}"
-  + "\nfunction showView(name){currentView=name;document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});document.querySelectorAll('.sidebar-nav a').forEach(function(a){a.classList.remove('active')});var el=document.getElementById('view-'+name);if(el)el.classList.add('active');var nav=document.querySelector('.sidebar-nav a[data-view=\"'+name+'\"]');if(nav)nav.classList.add('active');if(name==='dashboard')loadDashboard();if(name==='companies')loadCompanies();if(name==='finance')loadFinance();if(name==='monitoring')loadMonitoring();if(name==='tools')loadConfig();if(name==='guide')loadGuide();if(name==='canvas')initCanvasView();}"
+  + "\nfunction showView(name){currentView=name;document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active')});document.querySelectorAll('.sidebar-nav a').forEach(function(a){a.classList.remove('active')});var el=document.getElementById('view-'+name);if(el)el.classList.add('active');var nav=document.querySelector('.sidebar-nav a[data-view=\"'+name+'\"]');if(nav)nav.classList.add('active');if(name==='dashboard')loadDashboard();if(name==='companies')loadCompanies();if(name==='finance')loadFinance();if(name==='monitoring')loadMonitoring();if(name==='tools')loadConfig();if(name==='guide')loadGuide();if(name==='canvas')initCanvasView();if(name==='feishu')loadFeishu();}"
   + "\nfunction showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2000);}"
   + "\nfunction fmt(n){if(n>=100000000)return(n/100000000).toFixed(2)+' \\u4ebf';if(n>=10000)return(n/10000).toFixed(1)+' \\u4e07';return n.toLocaleString();}"
   + "\nfunction fmtDate(s){if(!s)return '--';return s.slice(0,10);}"
@@ -1322,7 +1386,7 @@ function getJs(): string {
   + "\nfunction toggleStaff(staffId,companyId,role,enabled){"
   + "fetch('/opc/admin/api/staff/'+encodeURIComponent(staffId)+'/toggle',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:enabled?1:0})})"
   + ".then(function(r){return r.json()}).then(function(d){if(d.ok){showToast(enabled?'\\u5df2\\u542f\\u7528 '+role:'\\u5df2\\u505c\\u7528 '+role);}"
-  + "else{showToast(d.error||'\\u64cd\\u4f5c\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
+  + "else{showToast(d.message||d.error||'\\u64cd\\u4f5c\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
   + "\nfunction editStaff(staffId,role,roleName,companyId){"
   + "var existing=document.getElementById('edit-modal');if(existing)existing.remove();"
   + "fetch('/opc/admin/api/staff/'+encodeURIComponent(staffId)).then(function(r){return r.json()}).then(function(s){"
@@ -1345,7 +1409,7 @@ function getJs(): string {
   + "var data={role_name:document.getElementById('sf-name').value,system_prompt:document.getElementById('sf-prompt').value,notes:document.getElementById('sf-notes').value};"
   + "fetch('/opc/admin/api/staff/'+encodeURIComponent(staffId)+'/edit',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})"
   + ".then(function(r){return r.json()}).then(function(d){if(d.ok){document.getElementById('edit-modal').remove();showToast('\\u5df2\\u4fdd\\u5b58');showCompany(companyId);}"
-  + "else{showToast(d.error||'\\u4fdd\\u5b58\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
+  + "else{showToast(d.message||d.error||'\\u4fdd\\u5b58\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
   + "\nfunction addEmployee(companyId){"
   + "var existing=document.getElementById('edit-modal');if(existing)existing.remove();"
   + "var today=new Date().toISOString().slice(0,10);"
@@ -1366,7 +1430,7 @@ function getJs(): string {
   + "\nfunction saveEmployee(companyId){"
   + "var data={company_id:companyId,employee_name:document.getElementById('emp-name').value,position:document.getElementById('emp-pos').value,salary:parseFloat(document.getElementById('emp-salary').value)||0,contract_type:document.getElementById('emp-type').value,start_date:document.getElementById('emp-date').value};"
   + "fetch('/opc/admin/api/hr/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})"
-  + ".then(function(r){return r.json()}).then(function(d){if(d.ok){document.getElementById('edit-modal').remove();showToast('\\u5458\\u5de5\\u5df2\\u6dfb\\u52a0');showCompany(companyId);}else{showToast(d.error||'\\u4fdd\\u5b58\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
+  + ".then(function(r){return r.json()}).then(function(d){if(d.ok){document.getElementById('edit-modal').remove();showToast('\\u5458\\u5de5\\u5df2\\u6dfb\\u52a0');showCompany(companyId);}else{showToast(d.message||d.error||'\\u4fdd\\u5b58\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
   + "\nfunction createProject(companyId){"
   + "var existing=document.getElementById('edit-modal');if(existing)existing.remove();"
   + "var html='<div id=\"edit-modal\" style=\"position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center\">';"
@@ -1388,12 +1452,12 @@ function getJs(): string {
   + "\nfunction saveProject(companyId){"
   + "var data={company_id:companyId,name:document.getElementById('pj-name').value,description:document.getElementById('pj-desc').value,start_date:document.getElementById('pj-start').value,end_date:document.getElementById('pj-end').value,budget:parseFloat(document.getElementById('pj-budget').value)||0};"
   + "fetch('/opc/admin/api/projects/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})"
-  + ".then(function(r){return r.json()}).then(function(d){if(d.ok){document.getElementById('edit-modal').remove();showToast('\\u9879\\u76ee\\u5df2\\u521b\\u5efa');showCompany(companyId);}else{showToast(d.error||'\\u4fdd\\u5b58\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
+  + ".then(function(r){return r.json()}).then(function(d){if(d.ok){document.getElementById('edit-modal').remove();showToast('\\u9879\\u76ee\\u5df2\\u521b\\u5efa');showCompany(companyId);}else{showToast(d.message||d.error||'\\u4fdd\\u5b58\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
   + "\nfunction initDefaultStaff(companyId){"
   + "fetch('/opc/admin/api/staff/'+encodeURIComponent(companyId)+'/init',{method:'POST'})"
   + ".then(function(r){return r.json()}).then(function(d){"
   + "if(d.ok){showToast('\\u5df2\\u521d\\u59cb\\u5316 '+d.created+' \\u4e2a\\u5c97\\u4f4d');showCompany(companyId);}"
-  + "else{showToast(d.error||'\\u521d\\u59cb\\u5316\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
+  + "else{showToast(d.message||d.error||'\\u521d\\u59cb\\u5316\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
   // ── 合同编辑 ──
   + "\nfunction editContract(id,title,counterparty,amount,status,startDate,endDate,keyTerms,riskNotes){"
   + "var existing=document.getElementById('edit-modal');if(existing)existing.remove();"
@@ -1427,7 +1491,7 @@ function getJs(): string {
   + "key_terms:document.getElementById('ct-terms').value,notes:document.getElementById('ct-risk').value};"
   + "fetch('/opc/admin/api/contracts/'+encodeURIComponent(id)+'/edit',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})"
   + ".then(function(r){return r.json()}).then(function(d){if(d.ok){document.getElementById('edit-modal').remove();showToast('\\u5408\\u540c\\u5df2\\u4fdd\\u5b58');showCompany(window.currentCompanyId||'');}"
-  + "else{showToast(d.error||'\\u4fdd\\u5b58\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
+  + "else{showToast(d.message||d.error||'\\u4fdd\\u5b58\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
   // ── createContract ──
   + "\nfunction createContract(companyId){"
   + "var existing=document.getElementById('edit-modal');if(existing)existing.remove();"
@@ -1459,7 +1523,7 @@ function getJs(): string {
   + "var data={company_id:companyId,title:document.getElementById('nc-title').value,counterparty:document.getElementById('nc-counterparty').value,contract_type:document.getElementById('nc-type').value,amount:parseFloat(document.getElementById('nc-amount').value)||0,start_date:document.getElementById('nc-start').value,end_date:document.getElementById('nc-end').value,key_terms:document.getElementById('nc-terms').value,risk_notes:document.getElementById('nc-risk').value};"
   + "fetch('/opc/admin/api/contracts/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})"
   + ".then(function(r){return r.json()}).then(function(d){if(d.ok){document.getElementById('edit-modal').remove();showToast('\\u5408\\u540c\\u5df2\\u65b0\\u5efa');showCompany(companyId);}"
-  + "else{showToast(d.error||'\\u65b0\\u5efa\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
+  + "else{showToast(d.message||d.error||'\\u65b0\\u5efa\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
   // ── addTransaction ──
   + "\nfunction addTransaction(companyId){"
   + "var existing=document.getElementById('edit-modal');if(existing)existing.remove();"
@@ -1484,7 +1548,7 @@ function getJs(): string {
   + "var data={company_id:companyId,type:document.getElementById('tx-type').value,category:document.getElementById('tx-category').value,amount:parseFloat(document.getElementById('tx-amount').value)||0,description:document.getElementById('tx-desc').value,counterparty:document.getElementById('tx-counterparty').value,transaction_date:document.getElementById('tx-date').value};"
   + "fetch('/opc/admin/api/transactions/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})"
   + ".then(function(r){return r.json()}).then(function(d){if(d.ok){document.getElementById('edit-modal').remove();showToast('\\u4ea4\\u6613\\u5df2\\u65b0\\u589e');showCompany(companyId);}"
-  + "else{showToast(d.error||'\\u65b0\\u589e\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
+  + "else{showToast(d.message||d.error||'\\u65b0\\u589e\\u5931\\u8d25');}}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
   // ── editCompany (内联编辑) ──
   + "\nfunction editCompany(id,name,industry,ownerName,ownerContact,desc,capital,status){"
   + "var html='<div id=\"edit-modal\" style=\"position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center\">';"
@@ -1516,7 +1580,7 @@ function getJs(): string {
   + "fetch('/opc/admin/api/companies/'+encodeURIComponent(id)+'/edit',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})"
   + ".then(function(r){return r.json()}).then(function(d){"
   + "if(d.ok){document.getElementById('edit-modal').remove();showToast('\\u4fdd\\u5b58\\u6210\\u529f');loadCompanyDetail(id);}"
-  + "else{showToast(d.error||'\\u4fdd\\u5b58\\u5931\\u8d25');}}).catch(function(){showToast('\\u64cd\\u4f5c\\u5931\\u8d25');});}"
+  + "else{showToast(d.message||d.error||'\\u4fdd\\u5b58\\u5931\\u8d25');}}).catch(function(){showToast('\\u64cd\\u4f5c\\u5931\\u8d25');});}"
   // ── loadGuide (SOP) ──
   + "\nfunction loadGuide(){var el=document.getElementById('guide-content');if(!el)return;el.innerHTML=renderSopGuide();}"
   + getGuideJs()
@@ -1548,12 +1612,7 @@ function getJs(): string {
   + "h+='</div>';});"
   + "h+='</div>';"
   + "list.innerHTML=h;"
-  // ── Webhook URL section — only update the input value ──
-  + "var wurl=toolConfig['webhook_url']||'';"
-  + "var winput=document.getElementById('webhook-url-input');if(winput)winput.value=wurl;"
   + "}"
-  + "\nfunction saveWebhookUrl(){var v=document.getElementById('webhook-url-input').value.trim();toolConfig['webhook_url']=v;saveConfig(function(){showToast(v?'Webhook \\u5df2\\u4fdd\\u5b58':'\\u5df2\\u6e05\\u9664 Webhook');});}"
-  + "\nfunction testWebhook(){var v=document.getElementById('webhook-url-input').value.trim();if(!v){showToast('\\u8bf7\\u5148\\u8f93\\u5165 Webhook \\u5730\\u5740');return;}fetch('/opc/admin/api/webhook-test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:v})}).then(function(r){return r.json()}).then(function(d){showToast(d.ok?'\\u6d4b\\u8bd5\\u6210\\u529f\\uff0c\\u8bf7\\u67e5\\u770b\\u673a\\u5668\\u4eba\\u6d88\\u606f':'\\u6d4b\\u8bd5\\u5931\\u8d25: '+(d.error||''));}).catch(function(){showToast('\\u8bf7\\u6c42\\u5f02\\u5e38');});}"
   + "\nfunction toggleTool(key,enabled){toolConfig[key]=enabled?'enabled':'disabled';saveConfig(function(){showToast((enabled?'\\u5df2\\u542f\\u7528':'\\u5df2\\u7981\\u7528')+' '+key);renderTools();});}"
   + "\nfunction saveToolField(key,field,value){toolConfig[key+'_'+field]=value;saveConfig(function(){showToast('\\u5df2\\u4fdd\\u5b58 '+key+' '+field);});}"
   + "\nfunction toggleToolSettings(key){var el=document.getElementById('tsettings-'+key);if(el)el.classList.toggle('open');}"
@@ -1720,8 +1779,178 @@ function getSkillsJs(): string {
   + "else{showToast('\u5220\u9664\u5931\u8d25: '+(d.error||'\u672a\u77e5\u9519\u8bef'));}})"
   + ".catch(function(){showToast('\u8bf7\u6c42\u5931\u8d25');});}"
   // ── hash routing ──
-  + "\nfunction handleHash(){var hash=window.location.hash.replace('#','');if(!hash||hash==='dashboard'){showView('dashboard');return;}if(hash==='companies'){showView('companies');return;}if(hash==='finance'){showView('finance');return;}if(hash==='monitoring'){showView('monitoring');return;}if(hash==='tools'){showView('tools');return;}if(hash==='closure'){showView('closure');loadClosure();return;}if(hash==='guide'){showView('guide');return;}if(hash==='canvas'){showView('canvas');return;}if(hash.indexOf('company/')===0){var cid=hash.slice(8);showCompany(cid);return;}showView('dashboard');}"
+  + "\nfunction handleHash(){var hash=window.location.hash.replace('#','');if(!hash||hash==='dashboard'){showView('dashboard');return;}if(hash==='companies'){showView('companies');return;}if(hash==='finance'){showView('finance');return;}if(hash==='monitoring'){showView('monitoring');return;}if(hash==='tools'){showView('tools');return;}if(hash==='closure'){showView('closure');loadClosure();return;}if(hash==='guide'){showView('guide');return;}if(hash==='canvas'){showView('canvas');return;}if(hash==='feishu'){showView('feishu');return;}if(hash.indexOf('company/')===0){var cid=hash.slice(8);showCompany(cid);return;}showView('dashboard');}"
+  + getFeishuJs()
   + getClosureJs();
+}
+
+function getFeishuJs(): string {
+  return ""
+  + "\nfunction loadFeishu(){"
+  + "var el=document.getElementById('feishu-content');"
+  + "el.innerHTML='<div class=\"skeleton\" style=\"height:200px\"></div>';"
+  + "Promise.all(["
+  + "  fetch('/opc/admin/api/feishu/status').then(function(r){return r.json()}),"
+  + "  fetch('/opc/admin/api/feishu/pairing').then(function(r){return r.json()})"
+  + "]).then(function(results){"
+  + "var status=results[0];var pairing=results[1];"
+  + "renderFeishuPage(status,pairing);"
+  + "}).catch(function(err){el.innerHTML='<div class=\"card\"><div class=\"card-body\"><p style=\"color:var(--err)\">\\u52a0\\u8f7d\\u5931\\u8d25: '+err.message+'</p></div></div>';});}"
+
+  // renderFeishuPage
+  + "\nfunction renderFeishuPage(status,pairing){"
+  + "var el=document.getElementById('feishu-content');"
+  + "var h='';"
+  + "var dmLabels={'pairing':'\\u9700\\u8981\\u914d\\u5bf9\\u624d\\u80fd\\u79c1\\u804a','open':'\\u4efb\\u4f55\\u4eba\\u90fd\\u53ef\\u4ee5\\u79c1\\u804a'};"
+
+  // 1. Feishu section header
+  + "h+='<h2 class=\"ch-section-title\">';"
+  + "h+='<svg width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"none\"><path d=\"M3 10.5C5 6 8 3.5 11 3c-1.2 2.5-1.5 5-.5 8L14.5 16l-5-2C6.5 15.5 3.5 14 3 10.5z\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/></svg>';"
+  + "h+='\\u98de\\u4e66</h2>';"
+
+  // 2. Connection status card
+  + "h+='<div class=\"card\">';"
+  + "h+='<h3>\\u8fde\\u63a5\\u72b6\\u6001</h3>';"
+  + "if(status.configured){"
+  + "h+='<div class=\"ch-status-row\">';"
+  + "h+='<span class=\"ch-status-dot\" style=\"background:'+(status.enabled?'var(--ok)':'var(--err)') +'\"></span>';"
+  + "h+='<strong>'+(status.enabled?'\\u5df2\\u8fde\\u63a5':'\\u5df2\\u914d\\u7f6e\\uff0c\\u7b49\\u5f85\\u91cd\\u542f\\u540e\\u751f\\u6548')+'</strong></div>';"
+  + "h+='<div class=\"ch-info-grid\">';"
+  + "h+='<div class=\"ch-info-item\"><div class=\"ch-info-label\">\\u5e94\\u7528 ID</div><div class=\"ch-info-value\"><code>'+esc(status.appId)+'</code></div></div>';"
+  + "h+='<div class=\"ch-info-item\"><div class=\"ch-info-label\">\\u673a\\u5668\\u4eba\\u540d\\u79f0</div><div class=\"ch-info-value\">'+esc(status.botName)+'</div></div>';"
+  + "h+='<div class=\"ch-info-item\"><div class=\"ch-info-label\">\\u79c1\\u804a\\u6743\\u9650</div><div class=\"ch-info-value\">'+(dmLabels[status.dmPolicy]||esc(status.dmPolicy))+'</div></div>';"
+  + "h+='<div class=\"ch-info-item\"><div class=\"ch-info-label\">\\u6d41\\u5f0f\\u56de\\u590d</div><div class=\"ch-info-value\">'+(status.streaming?'\\u5df2\\u5f00\\u542f':'\\u5df2\\u5173\\u95ed')+'</div></div>';"
+  + "h+='</div>';"
+  + "}else{"
+  + "h+='<div class=\"ch-status-row\">';"
+  + "h+='<span class=\"ch-status-dot\" style=\"background:var(--tx3)\"></span>';"
+  + "h+='<strong>\\u672a\\u914d\\u7f6e</strong></div>';"
+
+  // ── Detailed step-by-step guide for non-technical users ──
+  + "h+='<div class=\"ch-guide-box\">';"
+  + "h+='<p style=\"font-weight:600;font-size:14px;margin-bottom:14px\">\\u6309\\u4ee5\\u4e0b\\u6b65\\u9aa4\\u914d\\u7f6e\\u98de\\u4e66\\u673a\\u5668\\u4eba\\uff0c\\u5b8c\\u6210\\u540e\\u4f60\\u5c31\\u53ef\\u4ee5\\u5728\\u98de\\u4e66\\u4e2d\\u76f4\\u63a5\\u548c AI \\u52a9\\u624b\\u5bf9\\u8bdd\\u3001\\u7ba1\\u7406\\u516c\\u53f8\\uff1a</p>';"
+  + "h+='<ol>';"
+
+  // Step 1
+  + "h+='<li><strong>\\u6253\\u5f00\\u98de\\u4e66\\u5f00\\u653e\\u5e73\\u53f0</strong><br>';"
+  + "h+='\\u7528\\u6d4f\\u89c8\\u5668\\u8bbf\\u95ee <a href=\"https://open.feishu.cn\" target=\"_blank\" style=\"color:var(--pri);font-weight:500\">open.feishu.cn</a>\\uff0c\\u767b\\u5f55\\u4f60\\u7684\\u98de\\u4e66\\u8d26\\u53f7\\u3002';"
+  + "h+='<span class=\"step-hint\">\\u63d0\\u793a\\uff1a\\u5982\\u679c\\u4f60\\u7684\\u98de\\u4e66\\u662f\\u4e2a\\u4eba\\u7248\\uff0c\\u53ef\\u4ee5\\u76f4\\u63a5\\u4f7f\\u7528\\uff1b\\u4f01\\u4e1a\\u7248\\u9700\\u8981\\u7ba1\\u7406\\u5458\\u6743\\u9650\\u3002</span></li>';"
+
+  // Step 2
+  + "h+='<li><strong>\\u521b\\u5efa\\u5e94\\u7528</strong><br>';"
+  + "h+='\\u767b\\u5f55\\u540e\\u70b9\\u51fb\\u9875\\u9762\\u4e2d\\u95f4\\u7684\\u300c<strong>\\u521b\\u5efa\\u81ea\\u5efa\\u5e94\\u7528</strong>\\u300d\\u6309\\u94ae\\u3002';"
+  + "h+='<br>\\u586b\\u5199\\u5e94\\u7528\\u540d\\u79f0\\uff08\\u6bd4\\u5982\\u300c\\u661f\\u73afOPC\\u52a9\\u624b\\u300d\\uff09\\uff0c\\u63cf\\u8ff0\\u53ef\\u4ee5\\u968f\\u4fbf\\u586b\\uff0c\\u7136\\u540e\\u70b9\\u300c\\u521b\\u5efa\\u300d\\u3002</li>';"
+
+  // Step 3
+  + "h+='<li><strong>\\u590d\\u5236 App ID \\u548c App Secret</strong><br>';"
+  + "h+='\\u521b\\u5efa\\u5b8c\\u6210\\u540e\\u4f1a\\u8fdb\\u5165\\u5e94\\u7528\\u7684\\u7ba1\\u7406\\u9875\\u9762\\u3002';"
+  + "h+='<br>\\u5728\\u5de6\\u4fa7\\u83dc\\u5355\\u627e\\u5230\\u300c<strong>\\u51ed\\u8bc1\\u4e0e\\u57fa\\u7840\\u4fe1\\u606f</strong>\\u300d\\uff0c\\u4f60\\u4f1a\\u770b\\u5230 <strong>App ID</strong> \\u548c <strong>App Secret</strong>\\u3002';"
+  + "h+='<br>\\u70b9\\u51fb\\u590d\\u5236\\u6309\\u94ae\\uff0c\\u628a\\u5b83\\u4eec\\u7c98\\u8d34\\u5230\\u4e0b\\u65b9\\u7684\\u8868\\u5355\\u4e2d\\u3002';"
+  + "h+='<span class=\"step-hint\">App Secret \\u70b9\\u51fb\\u300c\\u663e\\u793a\\u300d\\u540e\\u624d\\u80fd\\u590d\\u5236\\uff0c\\u5982\\u679c\\u770b\\u4e0d\\u5230\\u8bf7\\u70b9\\u300c\\u91cd\\u7f6e\\u300d\\u751f\\u6210\\u65b0\\u7684\\u3002</span></li>';"
+
+  // Step 4
+  + "h+='<li><strong>\\u5f00\\u542f\\u673a\\u5668\\u4eba\\u80fd\\u529b</strong><br>';"
+  + "h+='\\u5728\\u5de6\\u4fa7\\u83dc\\u5355\\u627e\\u5230\\u300c<strong>\\u6dfb\\u52a0\\u5e94\\u7528\\u80fd\\u529b</strong>\\u300d\\uff0c\\u627e\\u5230\\u300c<strong>\\u673a\\u5668\\u4eba</strong>\\u300d\\uff0c\\u70b9\\u51fb\\u300c\\u5f00\\u542f\\u300d\\u3002';"
+  + "h+='<span class=\"step-hint\">\\u8fd9\\u6837\\u4f60\\u7684\\u5e94\\u7528\\u624d\\u80fd\\u5728\\u98de\\u4e66\\u4e2d\\u63a5\\u6536\\u548c\\u53d1\\u9001\\u6d88\\u606f\\u3002</span></li>';"
+
+  // Step 5
+  + "h+='<li><strong>\\u914d\\u7f6e\\u4e8b\\u4ef6\\u8ba2\\u9605\\uff08\\u63a5\\u6536\\u7528\\u6237\\u6d88\\u606f\\uff09</strong><br>';"
+  + "h+='\\u5728\\u5de6\\u4fa7\\u83dc\\u5355\\u627e\\u5230\\u300c<strong>\\u4e8b\\u4ef6\\u4e0e\\u56de\\u8c03</strong>\\u300d\\u3002';"
+  + "h+='<br>\\u5728\\u300c\\u4e8b\\u4ef6\\u8ba2\\u9605\\u300d\\u680f\\u70b9\\u300c<strong>\\u6dfb\\u52a0\\u4e8b\\u4ef6</strong>\\u300d\\uff0c\\u641c\\u7d22\\u5e76\\u6dfb\\u52a0\\uff1a<code>im.message.receive_v1</code>';"
+  + "h+='<br>\\u5728\\u4e0a\\u65b9\\u7684\\u300c\\u8bf7\\u6c42\\u5730\\u5740\\u300d\\u586b\\u5165\\u4e8b\\u4ef6\\u56de\\u8c03\\u5730\\u5740\\uff08\\u542f\\u52a8 OpenClaw \\u65f6\\u63a7\\u5236\\u53f0\\u4f1a\\u6253\\u5370\\u8fd9\\u4e2a\\u5730\\u5740\\uff0c\\u683c\\u5f0f\\u7c7b\\u4f3c\\uff1a<code>https://xxx.xxx/feishu/event</code>\\uff09\\u3002';"
+  + "h+='<span class=\"step-hint\">\\u5982\\u679c\\u8fd8\\u6ca1\\u542f\\u52a8 OpenClaw\\uff0c\\u53ef\\u4ee5\\u5148\\u8df3\\u8fc7\\u8fd9\\u6b65\\uff0c\\u5148\\u586b\\u5199\\u4e0b\\u65b9\\u8868\\u5355\\u4fdd\\u5b58\\uff0c\\u4e0b\\u6b21\\u542f\\u52a8\\u65f6\\u4f1a\\u663e\\u793a\\u5730\\u5740\\u3002</span></li>';"
+
+  // Step 6
+  + "h+='<li><strong>\\u914d\\u7f6e\\u6743\\u9650</strong><br>';"
+  + "h+='\\u5728\\u5de6\\u4fa7\\u83dc\\u5355\\u627e\\u5230\\u300c<strong>\\u6743\\u9650\\u7ba1\\u7406</strong>\\u300d\\uff0c\\u70b9\\u300c<strong>\\u5f00\\u901a\\u6743\\u9650</strong>\\u300d\\uff0c\\u641c\\u7d22\\u5e76\\u6dfb\\u52a0\\u4ee5\\u4e0b\\u6743\\u9650\\uff1a';"
+  + "h+='<br><code>im:message</code>\\uff08\\u83b7\\u53d6\\u4e0e\\u53d1\\u9001\\u6d88\\u606f\\uff09';"
+  + "h+='<br><code>im:message:send_as_bot</code>\\uff08\\u4ee5\\u673a\\u5668\\u4eba\\u8eab\\u4efd\\u53d1\\u6d88\\u606f\\uff09';"
+  + "h+='<span class=\"step-hint\">\\u6dfb\\u52a0\\u540e\\u70b9\\u300c\\u6279\\u91cf\\u5f00\\u901a\\u300d\\uff0c\\u4f01\\u4e1a\\u7248\\u53ef\\u80fd\\u9700\\u7ba1\\u7406\\u5458\\u5ba1\\u6279\\u3002</span></li>';"
+
+  // Step 7
+  + "h+='<li><strong>\\u53d1\\u5e03\\u5e94\\u7528</strong><br>';"
+  + "h+='\\u5728\\u5de6\\u4fa7\\u83dc\\u5355\\u627e\\u5230\\u300c<strong>\\u5e94\\u7528\\u53d1\\u5e03</strong>\\u300d\\uff0c\\u70b9\\u300c<strong>\\u521b\\u5efa\\u7248\\u672c</strong>\\u300d\\uff0c\\u586b\\u5199\\u7248\\u672c\\u53f7\\uff08\\u5982 1.0.0\\uff09\\u548c\\u66f4\\u65b0\\u8bf4\\u660e\\uff0c\\u70b9\\u300c\\u4fdd\\u5b58\\u300d\\u3002';"
+  + "h+='<br>\\u7136\\u540e\\u70b9\\u300c\\u7533\\u8bf7\\u53d1\\u5e03\\u300d\\u3002\\u4e2a\\u4eba\\u7248\\u76f4\\u63a5\\u751f\\u6548\\uff0c\\u4f01\\u4e1a\\u7248\\u9700\\u7ba1\\u7406\\u5458\\u5ba1\\u6838\\u3002';"
+  + "h+='<span class=\"step-hint\">\\u53d1\\u5e03\\u540e\\uff0c\\u5728\\u98de\\u4e66\\u641c\\u7d22\\u4f60\\u7684\\u673a\\u5668\\u4eba\\u540d\\u79f0\\u5c31\\u80fd\\u627e\\u5230\\u5b83\\uff0c\\u53d1\\u6d88\\u606f\\u5c31\\u80fd\\u548c AI \\u52a9\\u624b\\u5bf9\\u8bdd\\u4e86\\u3002</span></li>';"
+
+  // Step 8
+  + "h+='<li><strong>\\u586b\\u5199\\u4e0b\\u65b9\\u8868\\u5355\\u5e76\\u4fdd\\u5b58</strong><br>';"
+  + "h+='\\u628a\\u590d\\u5236\\u7684 App ID \\u548c App Secret \\u586b\\u5165\\u4e0b\\u65b9\\u7684\\u300c\\u98de\\u4e66\\u5e94\\u7528\\u914d\\u7f6e\\u300d\\u8868\\u5355\\uff0c\\u70b9\\u300c\\u4fdd\\u5b58\\u914d\\u7f6e\\u300d\\u5373\\u53ef\\u3002</li>';"
+
+  + "h+='</ol></div>';"
+  + "}"
+  + "h+='</div>';"
+
+  // 3. Configuration form card
+  + "h+='<div class=\"card\">';"
+  + "h+='<h3>\\u98de\\u4e66\\u5e94\\u7528\\u914d\\u7f6e</h3>';"
+  + "h+='<div class=\"ch-form\">';"
+  + "h+='<div class=\"ch-field\"><label>App ID <span class=\"hint\">\\u5728\\u98de\\u4e66\\u5f00\\u653e\\u5e73\\u53f0\\u300c\\u51ed\\u8bc1\\u4e0e\\u57fa\\u7840\\u4fe1\\u606f\\u300d\\u4e2d\\u590d\\u5236</span></label><input id=\"feishu-app-id\" type=\"text\" placeholder=\"cli_xxxxxxxxxx\"></div>';"
+  + "h+='<div class=\"ch-field\"><label>App Secret <span class=\"hint\">\\u540c\\u4e0a\\uff0c\\u70b9\\u300c\\u663e\\u793a\\u300d\\u540e\\u590d\\u5236</span></label><input id=\"feishu-app-secret\" type=\"password\" placeholder=\"\\u70b9\\u51fb\\u8f93\\u5165\"></div>';"
+  + "h+='<div class=\"ch-field\"><label>\\u673a\\u5668\\u4eba\\u540d\\u79f0 <span class=\"hint\">\\u663e\\u793a\\u5728\\u98de\\u4e66\\u804a\\u5929\\u4e2d\\u7684\\u540d\\u5b57</span></label><input id=\"feishu-bot-name\" type=\"text\" value=\"\\u661f\\u73afOPC\\u52a9\\u624b\"></div>';"
+  + "h+='<div class=\"ch-field\"><label>\\u79c1\\u804a\\u6743\\u9650 <span class=\"hint\">\\u8c01\\u53ef\\u4ee5\\u548c\\u673a\\u5668\\u4eba\\u79c1\\u804a</span></label><select id=\"feishu-dm-policy\"><option value=\"pairing\">\\u9700\\u8981\\u914d\\u5bf9\\uff08\\u4ec5\\u5141\\u8bb8\\u7ecf\\u8fc7\\u5ba1\\u6279\\u7684\\u7528\\u6237\\u79c1\\u804a\\uff0c\\u66f4\\u5b89\\u5168\\uff09</option><option value=\"open\">\\u5f00\\u653e\\uff08\\u4efb\\u4f55\\u4eba\\u90fd\\u53ef\\u4ee5\\u76f4\\u63a5\\u548c\\u673a\\u5668\\u4eba\\u5bf9\\u8bdd\\uff09</option></select></div>';"
+  + "h+='<div><button class=\"btn btn-pri\" onclick=\"saveFeishuConfig()\" style=\"padding:10px 28px;font-size:14px;border-radius:8px\">\\u4fdd\\u5b58\\u914d\\u7f6e</button></div>';"
+  + "h+='</div></div>';"
+
+  // 4. Pairing management card (only for dmPolicy=pairing)
+  + "if(status.dmPolicy==='pairing'){"
+  + "h+='<div class=\"card\">';"
+  + "h+='<h3>\\u914d\\u5bf9\\u7ba1\\u7406</h3>';"
+  + "h+='<p style=\"color:var(--tx2);font-size:12px;margin-bottom:16px\">\\u79c1\\u804a\\u6743\\u9650\\u4e3a\\u300c\\u9700\\u8981\\u914d\\u5bf9\\u300d\\u65f6\\uff0c\\u7528\\u6237\\u9996\\u6b21\\u7ed9\\u673a\\u5668\\u4eba\\u53d1\\u6d88\\u606f\\u4f1a\\u8fdb\\u5165\\u5f85\\u5ba1\\u6279\\u5217\\u8868\\uff0c\\u4f60\\u5728\\u6b64\\u5904\\u6279\\u51c6\\u540e\\u624d\\u80fd\\u5bf9\\u8bdd\\u3002</p>';"
+  + "if(pairing&&(pairing.approved&&pairing.approved.length>0||pairing.pending&&pairing.pending.length>0)){"
+  + "if(pairing.approved&&pairing.approved.length>0){"
+  + "h+='<p style=\"font-weight:600;margin-bottom:8px\">\\u5df2\\u6279\\u51c6\\u7684\\u7528\\u6237</p>';"
+  + "h+='<table style=\"margin-bottom:16px\"><thead><tr><th>\\u7528\\u6237 ID</th><th>\\u5907\\u6ce8</th></tr></thead><tbody>';"
+  + "pairing.approved.forEach(function(u){h+='<tr><td><code>'+esc(u.openId)+'</code></td><td>'+esc(u.note||'--')+'</td></tr>';});"
+  + "h+='</tbody></table>';}"
+  + "if(pairing.pending&&pairing.pending.length>0){"
+  + "h+='<p style=\"font-weight:600;margin-bottom:8px\">\\u5f85\\u5ba1\\u6279</p>';"
+  + "h+='<table><thead><tr><th>\\u7528\\u6237 ID</th><th>\\u64cd\\u4f5c</th></tr></thead><tbody>';"
+  + "pairing.pending.forEach(function(u){h+='<tr><td><code>'+esc(u.openId)+'</code></td><td><button class=\"btn btn-pri btn-sm\" onclick=\"approveFeishuPairing(\\''+esc(u.openId)+'\\',true)\">\\u6279\\u51c6</button> <button class=\"btn btn-sm\" onclick=\"approveFeishuPairing(\\''+esc(u.openId)+'\\',false)\">\\u62d2\\u7edd</button></td></tr>';});"
+  + "h+='</tbody></table>';}"
+  + "}else{"
+  + "h+='<p style=\"color:var(--tx2)\">\\u6682\\u65e0\\u914d\\u5bf9\\u8bb0\\u5f55\\u3002\\u7528\\u6237\\u7ed9\\u673a\\u5668\\u4eba\\u53d1\\u6d88\\u606f\\u540e\\u4f1a\\u81ea\\u52a8\\u51fa\\u73b0\\u5728\\u6b64\\u5904\\u3002</p>';"
+  + "}"
+  + "h+='</div>';}"
+
+  // 5. Future channels placeholder
+  + "h+='<div class=\"ch-future\">';"
+  + "h+='<h2>\\u66f4\\u591a\\u9891\\u9053</h2>';"
+  + "h+='<p>\\u5fae\\u4fe1\\u3001\\u9489\\u9489\\u3001Telegram \\u7b49\\u9891\\u9053\\u5373\\u5c06\\u652f\\u6301\\uff0c\\u656c\\u8bf7\\u671f\\u5f85\\u3002</p>';"
+  + "h+='</div>';"
+
+  // Populate form with existing values
+  + "if(status.configured){"
+  + "var appIdInput=document.getElementById('feishu-app-id');"
+  + "if(appIdInput)appIdInput.placeholder='\\u5df2\\u914d\\u7f6e ('+status.appId+')';"
+  + "var botInput=document.getElementById('feishu-bot-name');"
+  + "if(botInput&&status.botName)botInput.value=status.botName;"
+  + "var policySelect=document.getElementById('feishu-dm-policy');"
+  + "if(policySelect)policySelect.value=status.dmPolicy||'pairing';"
+  + "}"
+
+  + "el.innerHTML=h;}"
+
+  // saveFeishuConfig
+  + "\nfunction saveFeishuConfig(){"
+  + "var appId=document.getElementById('feishu-app-id').value.trim();"
+  + "var appSecret=document.getElementById('feishu-app-secret').value.trim();"
+  + "var botName=document.getElementById('feishu-bot-name').value.trim();"
+  + "var dmPolicy=document.getElementById('feishu-dm-policy').value;"
+  + "if(!appId&&!appSecret){showToast('\\u8bf7\\u586b\\u5199 App ID \\u548c App Secret');return;}"
+  + "fetch('/opc/admin/api/feishu/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({appId:appId,appSecret:appSecret,botName:botName,dmPolicy:dmPolicy})})"
+  + ".then(function(r){return r.json()}).then(function(d){"
+  + "if(d.ok){showToast(d.message||'\\u914d\\u7f6e\\u5df2\\u4fdd\\u5b58');setTimeout(function(){loadFeishu();},1000);}"
+  + "else{showToast('\\u4fdd\\u5b58\\u5931\\u8d25: '+(d.error||''));}"
+  + "}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}"
+
+  // approveFeishuPairing
+  + "\nfunction approveFeishuPairing(openId,approve){"
+  + "fetch('/opc/admin/api/feishu/pairing/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({openId:openId,approve:approve})})"
+  + ".then(function(r){return r.json()}).then(function(d){"
+  + "if(d.ok){showToast(approve?'\\u5df2\\u6279\\u51c6':'\\u5df2\\u62d2\\u7edd');loadFeishu();}"
+  + "else{showToast('\\u64cd\\u4f5c\\u5931\\u8d25: '+(d.error||''));}"
+  + "}).catch(function(){showToast('\\u8bf7\\u6c42\\u5931\\u8d25');});}";
 }
 
 function getClosureJs(): string {
@@ -2615,7 +2844,7 @@ function getCanvasJs(): string {
 
 /* ── Route registration ───────────────────────────────────── */
 
-export function registerConfigUi(api: OpenClawPluginApi, db: OpcDatabase): void {
+export function registerConfigUi(api: OpenClawPluginApi, db: OpcDatabase, gatewayToken?: string): void {
   api.registerHttpHandler(async (req, res) => {
     const rawUrl = req.url ?? "";
     const urlObj = new URL(rawUrl, "http://localhost");
@@ -2624,6 +2853,23 @@ export function registerConfigUi(api: OpenClawPluginApi, db: OpcDatabase): void 
 
     if (!pathname.startsWith("/opc/admin")) {
       return false;
+    }
+
+    // API 端点需要认证
+    if (pathname.startsWith("/opc/admin/api/") && gatewayToken) {
+      if (method === "OPTIONS") {
+        res.writeHead(204);
+        res.end();
+        return true;
+      }
+      const authHeader = req.headers["authorization"];
+      const match = authHeader?.match(/^Bearer\s+(.+)$/i);
+      const token = match?.[1];
+      if (token !== gatewayToken) {
+        res.writeHead(401, { "Content-Type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify({ error: "认证令牌无效", code: "AUTH_INVALID" }));
+        return true;
+      }
     }
 
     try {
@@ -2653,45 +2899,107 @@ export function registerConfigUi(api: OpenClawPluginApi, db: OpcDatabase): void 
         return true;
       }
 
-      // Webhook Test API: POST
-      if (pathname === "/opc/admin/api/webhook-test" && method === "POST") {
-        const body = await readBody(req);
-        const { url } = JSON.parse(body) as { url?: string };
-        if (!url) {
-          sendJson(res, { ok: false, error: "url required" }, 400);
+      // ── Feishu Channel APIs ──
+      if (pathname === "/opc/admin/api/feishu/status" && method === "GET") {
+        const cfg = api.runtime.config.loadConfig();
+        const feishuCfg = (cfg as Record<string, unknown>).channels as Record<string, unknown> | undefined;
+        const feishu = feishuCfg?.feishu as Record<string, unknown> | undefined;
+        const accounts = feishu?.accounts as Record<string, Record<string, string>> | undefined;
+        const main = accounts?.main;
+        sendJson(res, {
+          configured: !!(main?.appId && main.appId !== "YOUR_FEISHU_APP_ID"),
+          enabled: feishu?.enabled ?? false,
+          appId: main?.appId ? "***" + main.appId.slice(-4) : "",
+          botName: main?.botName ?? "",
+          dmPolicy: feishu?.dmPolicy ?? "pairing",
+          streaming: feishu?.streaming ?? false,
+        });
+        return true;
+      }
+
+      if (pathname === "/opc/admin/api/feishu/config" && method === "POST") {
+        const body = JSON.parse(await readBody(req)) as {
+          appId?: string; appSecret?: string; botName?: string; dmPolicy?: string;
+        };
+        const cfg = api.runtime.config.loadConfig() as Record<string, unknown>;
+        const channels = (cfg.channels ?? {}) as Record<string, unknown>;
+        const existing = (channels.feishu ?? {}) as Record<string, unknown>;
+        channels.feishu = {
+          ...existing,
+          enabled: true,
+          dmPolicy: body.dmPolicy ?? "pairing",
+          groupPolicy: "open",
+          streaming: true,
+          accounts: {
+            main: {
+              appId: body.appId || ((existing.accounts as Record<string, Record<string, string>> | undefined)?.main?.appId ?? ""),
+              appSecret: body.appSecret || ((existing.accounts as Record<string, Record<string, string>> | undefined)?.main?.appSecret ?? ""),
+              botName: body.botName || "\u661F\u73AFOPC\u52A9\u624B",
+            },
+          },
+        };
+        cfg.channels = channels;
+        await api.runtime.config.writeConfigFile(cfg);
+        sendJson(res, { ok: true, message: "\u914D\u7F6E\u5DF2\u4FDD\u5B58\uFF0C\u7CFB\u7EDF\u5C06\u81EA\u52A8\u91CD\u542F\u4EE5\u5E94\u7528\u65B0\u914D\u7F6E" });
+        return true;
+      }
+
+      if (pathname === "/opc/admin/api/feishu/pairing" && method === "GET") {
+        const pairingPath = path.join(os.homedir(), ".openclaw", "oauth", "feishu-pairing.json");
+        let pairing: unknown = { approved: [], pending: [] };
+        try {
+          if (fs.existsSync(pairingPath)) {
+            pairing = JSON.parse(fs.readFileSync(pairingPath, "utf-8"));
+          }
+        } catch { /* ignore */ }
+        sendJson(res, pairing);
+        return true;
+      }
+
+      if (pathname === "/opc/admin/api/feishu/pairing/approve" && method === "POST") {
+        const body = JSON.parse(await readBody(req)) as { openId?: string; approve?: boolean };
+        if (!body.openId) {
+          sendJson(res, { ok: false, error: "openId required" }, 400);
           return true;
         }
-        await new Promise<void>((resolve) => {
-          try {
-            const isFeishu = url.includes("feishu.cn") || url.includes("larksuite.com");
-            const text = "【星环OPC中心】Webhook 测试消息，连接正常 ✓";
-            const bodyStr = isFeishu
-              ? JSON.stringify({ msg_type: "text", content: { text } })
-              : JSON.stringify({ msgtype: "text", text: { content: text } });
-            const parsed = new URL(url);
-            const transport = parsed.protocol === "https:" ? https : http;
-            const reqOut = transport.request(
-              {
-                hostname: parsed.hostname,
-                port: parsed.port || (parsed.protocol === "https:" ? 443 : 80),
-                path: parsed.pathname + parsed.search,
-                method: "POST",
-                headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(bodyStr) },
-              },
-              (r) => {
-                r.resume();
-                sendJson(res, r.statusCode && r.statusCode < 400 ? { ok: true } : { ok: false, error: `HTTP ${r.statusCode}` });
-                resolve();
-              },
-            );
-            reqOut.on("error", (err) => { sendJson(res, { ok: false, error: err.message }); resolve(); });
-            reqOut.write(bodyStr);
-            reqOut.end();
-          } catch (err) {
-            sendJson(res, { ok: false, error: err instanceof Error ? err.message : String(err) });
-            resolve();
+        const allowPath = path.join(os.homedir(), ".openclaw", "oauth", "feishu-allowFrom.json");
+        let allowList: string[] = [];
+        try {
+          if (fs.existsSync(allowPath)) {
+            allowList = JSON.parse(fs.readFileSync(allowPath, "utf-8")) as string[];
           }
-        });
+        } catch { /* ignore */ }
+        if (body.approve) {
+          if (!allowList.includes(body.openId)) allowList.push(body.openId);
+        } else {
+          allowList = allowList.filter((id) => id !== body.openId);
+        }
+        const dir = path.dirname(allowPath);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(allowPath, JSON.stringify(allowList, null, 2));
+        // Also update pairing file to move from pending to approved
+        const pairingPath = path.join(os.homedir(), ".openclaw", "oauth", "feishu-pairing.json");
+        try {
+          if (fs.existsSync(pairingPath)) {
+            const pairing = JSON.parse(fs.readFileSync(pairingPath, "utf-8")) as {
+              approved?: { openId: string; note?: string }[];
+              pending?: { openId: string }[];
+            };
+            if (body.approve && pairing.pending) {
+              const found = pairing.pending.find((p) => p.openId === body.openId);
+              if (found) {
+                pairing.pending = pairing.pending.filter((p) => p.openId !== body.openId);
+                pairing.approved = pairing.approved ?? [];
+                pairing.approved.push({ openId: body.openId, note: "" });
+                fs.writeFileSync(pairingPath, JSON.stringify(pairing, null, 2));
+              }
+            } else if (!body.approve && pairing.pending) {
+              pairing.pending = pairing.pending.filter((p) => p.openId !== body.openId);
+              fs.writeFileSync(pairingPath, JSON.stringify(pairing, null, 2));
+            }
+          }
+        } catch { /* ignore */ }
+        sendJson(res, { ok: true });
         return true;
       }
 
@@ -3488,7 +3796,7 @@ export function registerConfigUi(api: OpenClawPluginApi, db: OpcDatabase): void 
       }
 
       // Serve HTML page for all other /opc/admin paths
-      sendHtml(res, buildPageHtml());
+      sendHtml(res, buildPageHtml(!!gatewayToken));
       return true;
     } catch (err) {
       res.writeHead(500, { "Content-Type": "application/json; charset=utf-8" });

@@ -9,7 +9,7 @@
 import { Type, type Static } from "@sinclair/typebox";
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import type { OpcDatabase } from "../db/index.js";
-import { json } from "../utils/tool-helper.js";
+import { json, toolError } from "../utils/tool-helper.js";
 
 const AssetPackageSchema = Type.Union([
   // ── 资产包管理 ──
@@ -149,7 +149,7 @@ export function registerAssetPackageTool(api: OpenClawPluginApi, db: OpcDatabase
 
             case "get_package_detail": {
               const pkg = db.queryOne("SELECT * FROM opc_asset_packages WHERE id = ?", p.package_id);
-              if (!pkg) return json({ error: "资产包不存在" });
+              if (!pkg) return toolError("资产包不存在", "RECORD_NOT_FOUND");
               const items = db.query(
                 `SELECT i.*, c.name as company_name, c.industry, c.status as company_status
                  FROM opc_asset_package_items i
@@ -269,10 +269,10 @@ export function registerAssetPackageTool(api: OpenClawPluginApi, db: OpcDatabase
             }
 
             default:
-              return json({ error: `未知操作: ${(p as { action: string }).action}` });
+              return toolError(`未知操作: ${(p as { action: string }).action}`, "UNKNOWN_ACTION");
           }
         } catch (err) {
-          return json({ error: err instanceof Error ? err.message : String(err) });
+          return toolError(err instanceof Error ? err.message : String(err), "DB_ERROR");
         }
       },
     },

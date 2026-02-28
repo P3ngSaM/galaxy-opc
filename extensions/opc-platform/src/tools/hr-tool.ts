@@ -5,7 +5,8 @@
 import { Type, type Static } from "@sinclair/typebox";
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import type { OpcDatabase } from "../db/index.js";
-import { json } from "../utils/tool-helper.js";
+import { BusinessWorkflows } from "../opc/business-workflows.js";
+import { json, toolError } from "../utils/tool-helper.js";
 
 const HrSchema = Type.Union([
   Type.Object({
@@ -129,7 +130,15 @@ export function registerHrTool(api: OpenClawPluginApi, db: OpcDatabase): void {
                 p.contract_type ?? "full_time",
                 p.notes ?? "", now, now,
               );
-              return json(db.queryOne("SELECT * FROM opc_hr_records WHERE id = ?", id));
+              // 业务闭环：自动记里程碑
+              const workflows = new BusinessWorkflows(db);
+              const autoCreated = workflows.afterEmployeeAdded({
+                id, company_id: p.company_id, employee_name: p.employee_name,
+                position: p.position, contract_type: p.contract_type ?? "full_time",
+                salary: p.salary,
+              });
+              const record = db.queryOne("SELECT * FROM opc_hr_records WHERE id = ?", id);
+              return json({ ...record as object, _auto_created: autoCreated });
             }
 
             case "list_employees": {
@@ -151,7 +160,9 @@ export function registerHrTool(api: OpenClawPluginApi, db: OpcDatabase): void {
               fields.push("updated_at = ?"); values.push(new Date().toISOString());
               values.push(p.record_id);
               db.execute(`UPDATE opc_hr_records SET ${fields.join(", ")} WHERE id = ?`, ...values);
-              return json(db.queryOne("SELECT * FROM opc_hr_records WHERE id = ?", p.record_id) ?? { error: "记录不存在" });
+              const hrRec = db.queryOne("SELECT * FROM opc_hr_records WHERE id = ?", p.record_id);
+              if (!hrRec) return toolError(`员工记录 ${p.record_id} 不存在`, "EMPLOYEE_NOT_FOUND");
+              return json(hrRec);
             }
 
             case "calc_social_insurance":
@@ -197,10 +208,10 @@ export function registerHrTool(api: OpenClawPluginApi, db: OpcDatabase): void {
             }
 
             default:
-              return json({ error: `未知操作: ${(p as { action: string }).action}` });
+              return toolError(`未知操作: ${(p as { action: string }).action}`, "UNKNOWN_ACTION");
           }
         } catch (err) {
-          return json({ error: err instanceof Error ? err.message : String(err) });
+          return toolError(err instanceof Error ? err.message : String(err), "DB_ERROR");
         }
       },
     },

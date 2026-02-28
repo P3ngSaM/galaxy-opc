@@ -8,7 +8,8 @@
 import { Type, type Static } from "@sinclair/typebox";
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import type { OpcDatabase } from "../db/index.js";
-import { json } from "../utils/tool-helper.js";
+import { CompanyManager } from "../opc/company-manager.js";
+import { json, toolError } from "../utils/tool-helper.js";
 
 const AcquisitionSchema = Type.Union([
   Type.Object({
@@ -43,6 +44,8 @@ const AcquisitionSchema = Type.Union([
 type AcquisitionParams = Static<typeof AcquisitionSchema>;
 
 export function registerAcquisitionTool(api: OpenClawPluginApi, db: OpcDatabase): void {
+  const manager = new CompanyManager(db);
+
   api.registerTool(
     {
       name: "opc_acquisition",
@@ -75,11 +78,11 @@ export function registerAcquisitionTool(api: OpenClawPluginApi, db: OpcDatabase)
                 p.notes ?? "", now, now,
               );
 
-              // 同步将公司状态标记为 acquired
-              db.execute(
-                `UPDATE opc_companies SET status = 'acquired', updated_at = ? WHERE id = ?`,
-                now, p.company_id,
-              );
+              // 通过状态机将公司标记为 acquired
+              const transitioned = manager.transitionStatus(p.company_id, "acquired");
+              if (!transitioned) {
+                return toolError(`公司 ${p.company_id} 不存在或当前状态不允许收购`, "INVALID_STATUS");
+              }
 
               const row = db.queryOne(
                 `SELECT a.*, c.name as company_name FROM opc_acquisition_cases a
@@ -136,10 +139,10 @@ export function registerAcquisitionTool(api: OpenClawPluginApi, db: OpcDatabase)
             }
 
             default:
-              return json({ error: `未知操作: ${(p as { action: string }).action}` });
+              return toolError(`未知操作: ${(p as { action: string }).action}`, "UNKNOWN_ACTION");
           }
         } catch (err) {
-          return json({ error: err instanceof Error ? err.message : String(err) });
+          return toolError(err instanceof Error ? err.message : String(err), "DB_ERROR");
         }
       },
     },
