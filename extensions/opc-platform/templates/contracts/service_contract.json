@@ -1,0 +1,148 @@
+{
+  "id": "service_contract",
+  "name": "服务合同模板",
+  "category": "contract",
+  "version": "1.0",
+  "description": "完整服务合同模板，包含甲乙方信息、服务条款、付款方式、违约责任、签章区",
+  "variables": {
+    "required": [
+      "counterparty",
+      "service_content",
+      "amount",
+      "start_date",
+      "end_date"
+    ],
+    "optional": [
+      "payment_terms",
+      "penalty_clause",
+      "special_terms"
+    ]
+  },
+  "sections": [
+    {
+      "type": "title",
+      "heading": "服务合同",
+      "level": 1
+    },
+    {
+      "type": "metadata",
+      "content": {
+        "contract_number": "{{auto_generate:HT-YYYYMM-XXX}}",
+        "signing_date": "{{auto_date:YYYY-MM-DD}}"
+      }
+    },
+    {
+      "type": "section",
+      "heading": "甲方（委托方）",
+      "level": 2,
+      "content": "- **名称**: {{counterparty}}\n- **地址**: {{counterparty_address|optional}}\n- **联系人**: {{counterparty_contact|optional}}"
+    },
+    {
+      "type": "section",
+      "heading": "乙方（服务方）",
+      "level": 2,
+      "content": "- **名称**: {{company.name}}\n- **联系人**: {{company.owner_name}}\n- **联系方式**: {{company.owner_contact}}"
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "section",
+      "heading": "第一条 服务内容",
+      "level": 2,
+      "content": "{{service_content}}"
+    },
+    {
+      "type": "section",
+      "heading": "第二条 合同期限",
+      "level": 2,
+      "content": "自 **{{start_date}}** 起至 **{{end_date}}** 止。"
+    },
+    {
+      "type": "section",
+      "heading": "第三条 合同金额及付款方式",
+      "level": 2,
+      "content": "合同总金额：**人民币 {{amount|format:currency}} 元整**。\n\n{{payment_terms|default:合同签订后 30 日内，甲方向乙方支付合同全额。}}"
+    },
+    {
+      "type": "section",
+      "heading": "第四条 双方权利义务",
+      "level": 2,
+      "subsections": [
+        {
+          "heading": "甲方权利义务",
+          "level": 3,
+          "content": "1. 按时支付合同款项；\n2. 配合乙方提供必要的资料和工作条件；\n3. 有权对服务质量进行监督和验收。"
+        },
+        {
+          "heading": "乙方权利义务",
+          "level": 3,
+          "content": "1. 按照合同约定提供专业服务；\n2. 保守甲方商业秘密和技术秘密；\n3. 按期完成服务交付。"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "heading": "第五条 违约责任",
+      "level": 2,
+      "content": "{{penalty_clause|default:任何一方违反本合同约定的，应向守约方支付合同总金额 10% 的违约金。}}"
+    },
+    {
+      "type": "section",
+      "heading": "第六条 争议解决",
+      "level": 2,
+      "content": "本合同在履行过程中如发生争议，双方应友好协商解决；协商不成的，任何一方均可向乙方所在地人民法院提起诉讼。"
+    },
+    {
+      "type": "section",
+      "heading": "第七条 其他",
+      "level": 2,
+      "content": "1. 本合同一式两份，甲乙双方各持一份，具有同等法律效力。\n2. 本合同未尽事宜，由双方另行协商补充。\n\n{{special_terms|optional}}"
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "signature_block",
+      "content": "**甲方（盖章）**：________________　　**乙方（盖章）**：________________\n\n**授权代表**：________________　　　　**授权代表**：________________\n\n**日期**：________________　　　　　　**日期**：________________"
+    }
+  ],
+  "metadata": {
+    "author": "星环OPC团队",
+    "created_at": "2026-02-28",
+    "updated_at": "2026-02-28",
+    "tags": ["合同", "服务", "标准模板"],
+    "language": "zh-CN",
+    "applicable_regions": ["中国大陆"]
+  },
+  "validation_rules": [
+    {
+      "field": "amount",
+      "rule": "must_be_positive",
+      "message": "合同金额必须大于 0"
+    },
+    {
+      "field": "end_date",
+      "rule": "must_be_after",
+      "compare_to": "start_date",
+      "message": "结束日期必须晚于开始日期"
+    }
+  ],
+  "export_options": {
+    "formats": ["docx", "pdf"],
+    "default_format": "docx",
+    "page_size": "A4",
+    "margins": {
+      "top": 2.5,
+      "right": 2,
+      "bottom": 2.5,
+      "left": 2,
+      "unit": "cm"
+    },
+    "font": {
+      "family": "宋体",
+      "size": 12,
+      "line_height": 1.5
+    }
+  }
+}

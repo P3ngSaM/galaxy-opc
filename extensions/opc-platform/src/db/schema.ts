@@ -608,6 +608,45 @@ export const OPC_TABLES = {
       FOREIGN KEY (company_id) REFERENCES opc_companies(id)
     )
   `,
+
+  // ── 财务期间表 ─────────────────────────────────────────────────
+
+  financial_periods: `
+    CREATE TABLE IF NOT EXISTS opc_financial_periods (
+      id TEXT PRIMARY KEY,
+      company_id TEXT NOT NULL,
+      period_type TEXT NOT NULL,
+      start_date TEXT NOT NULL,
+      end_date TEXT NOT NULL,
+      revenue REAL NOT NULL DEFAULT 0,
+      cost REAL NOT NULL DEFAULT 0,
+      profit REAL NOT NULL DEFAULT 0,
+      cash_flow REAL NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(company_id, period_type, start_date),
+      FOREIGN KEY (company_id) REFERENCES opc_companies(id)
+    )
+  `,
+
+  // ── 付款记录表 ─────────────────────────────────────────────────
+
+  payments: `
+    CREATE TABLE IF NOT EXISTS opc_payments (
+      id TEXT PRIMARY KEY,
+      company_id TEXT NOT NULL,
+      invoice_id TEXT NOT NULL DEFAULT '',
+      type TEXT NOT NULL,
+      amount REAL NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'pending',
+      due_date TEXT NOT NULL DEFAULT '',
+      paid_date TEXT NOT NULL DEFAULT '',
+      notes TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (company_id) REFERENCES opc_companies(id)
+    )
+  `,
 } as const;
 
 export const OPC_INDEXES = [
@@ -679,4 +718,12 @@ export const OPC_INDEXES = [
   "CREATE INDEX IF NOT EXISTS idx_celebrations_company ON opc_celebrations(company_id)",
   "CREATE INDEX IF NOT EXISTS idx_celebrations_shown ON opc_celebrations(shown)",
   "CREATE INDEX IF NOT EXISTS idx_briefings_company_date ON opc_briefings(company_id, briefing_date)",
+  // 财务期间表索引
+  "CREATE INDEX IF NOT EXISTS idx_financial_periods_company ON opc_financial_periods(company_id)",
+  "CREATE INDEX IF NOT EXISTS idx_financial_periods_dates ON opc_financial_periods(start_date, end_date)",
+  // 付款记录表索引
+  "CREATE INDEX IF NOT EXISTS idx_payments_company ON opc_payments(company_id)",
+  "CREATE INDEX IF NOT EXISTS idx_payments_invoice ON opc_payments(invoice_id)",
+  "CREATE INDEX IF NOT EXISTS idx_payments_status ON opc_payments(status)",
+  "CREATE INDEX IF NOT EXISTS idx_payments_due_date ON opc_payments(due_date)",
 ];

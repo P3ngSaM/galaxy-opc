@@ -158,6 +158,14 @@ export const migrations: Migration[] = [
       }
     },
   },
+  {
+    version: 14,
+    description: "Financial reporting — financial_periods and payments tables for advanced analysis",
+    up(_db) {
+      // opc_financial_periods and opc_payments tables created in initializeDatabase via OPC_TABLES
+      // Indexes created via OPC_INDEXES
+    },
+  },
 ];
 
 /**

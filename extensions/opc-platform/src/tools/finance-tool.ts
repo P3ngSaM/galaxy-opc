@@ -110,6 +110,41 @@ const FinanceSchema = Type.Union([
       issue_date: Type.Optional(Type.String({ description: "开票日期 (YYYY-MM-DD)" })),
     }), { description: "发票数组", minItems: 1, maxItems: 200 }),
   }),
+  Type.Object({
+    action: Type.Literal("generate_balance_sheet"),
+    company_id: Type.String({ description: "公司 ID" }),
+    date: Type.Optional(Type.String({ description: "查询日期 (YYYY-MM-DD)，默认今天" })),
+  }),
+  Type.Object({
+    action: Type.Literal("generate_income_statement"),
+    company_id: Type.String({ description: "公司 ID" }),
+    start_date: Type.String({ description: "起始日期 (YYYY-MM-DD)" }),
+    end_date: Type.String({ description: "截止日期 (YYYY-MM-DD)" }),
+  }),
+  Type.Object({
+    action: Type.Literal("generate_cashflow_statement"),
+    company_id: Type.String({ description: "公司 ID" }),
+    start_date: Type.String({ description: "起始日期 (YYYY-MM-DD)" }),
+    end_date: Type.String({ description: "截止日期 (YYYY-MM-DD)" }),
+  }),
+  Type.Object({
+    action: Type.Literal("calculate_customer_ltv"),
+    company_id: Type.String({ description: "公司 ID" }),
+    customer_id: Type.Optional(Type.String({ description: "特定客户 ID（不填则计算全部客户平均值）" })),
+  }),
+  Type.Object({
+    action: Type.Literal("calculate_acquisition_cost"),
+    company_id: Type.String({ description: "公司 ID" }),
+    period: Type.String({ description: "统计期间，如 2026-01 或 2026-Q1" }),
+  }),
+  Type.Object({
+    action: Type.Literal("unit_economics_analysis"),
+    company_id: Type.String({ description: "公司 ID" }),
+  }),
+  Type.Object({
+    action: Type.Literal("generate_funding_datapack"),
+    company_id: Type.String({ description: "公司 ID" }),
+  }),
 ]);
 
 type FinanceParams = Static<typeof FinanceSchema>;
@@ -143,7 +178,11 @@ export function registerFinanceTool(api: OpenClawPluginApi, db: OpcDatabase): vo
         "list_tax_filings(申报列表), tax_calendar(税务日历), delete_invoice(删除发票), " +
         "delete_tax_filing(删除税务申报记录), batch_import_transactions(批量导入交易), " +
         "batch_import_invoices(批量导入发票), get_invoice(获取发票详情含明细行), " +
-        "tax_filing_checklist(报税清单)",
+        "tax_filing_checklist(报税清单), " +
+        "generate_balance_sheet(生成资产负债表), generate_income_statement(生成利润表), " +
+        "generate_cashflow_statement(生成现金流量表), calculate_customer_ltv(计算客户生命周期价值), " +
+        "calculate_acquisition_cost(计算获客成本), unit_economics_analysis(单位经济学分析), " +
+        "generate_funding_datapack(生成融资数据包)",
       parameters: FinanceSchema,
       async execute(_toolCallId, params) {
         const p = params as FinanceParams;
@@ -442,6 +481,662 @@ export function registerFinanceTool(api: OpenClawPluginApi, db: OpcDatabase): vo
                 }
               });
               return json({ ok: true, imported_count: p.invoices.length, records });
+            }
+
+            case "generate_balance_sheet": {
+              const queryDate = p.date ?? new Date().toISOString().slice(0, 10);
+
+              // 流动资产 - 现金（从交易记录汇总）
+              const cashResult = db.queryOne(
+                `SELECT COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END), 0) as total
+                 FROM opc_transactions
+                 WHERE company_id = ? AND transaction_date <= ?`,
+                p.company_id, queryDate,
+              ) as { total: number };
+              const cash = cashResult?.total ?? 0;
+
+              // 应收账款（已开具但未收款的销项发票）
+              const receivablesResult = db.queryOne(
+                `SELECT COALESCE(SUM(total_amount), 0) as total
+                 FROM opc_invoices
+                 WHERE company_id = ? AND type = 'sales' AND status IN ('issued') AND issue_date <= ?`,
+                p.company_id, queryDate,
+              ) as { total: number };
+              const accountsReceivable = receivablesResult?.total ?? 0;
+
+              // 固定资产（从采购中筛选固定资产类别）
+              const fixedAssetsResult = db.queryOne(
+                `SELECT COALESCE(SUM(amount), 0) as total
+                 FROM opc_transactions
+                 WHERE company_id = ? AND type = 'expense' AND category = 'supplies' AND transaction_date <= ?`,
+                p.company_id, queryDate,
+              ) as { total: number };
+              const fixedAssets = fixedAssetsResult?.total ?? 0;
+
+              // 流动负债 - 应付账款（已收到但未支付的进项发票）
+              const payablesResult = db.queryOne(
+                `SELECT COALESCE(SUM(total_amount), 0) as total
+                 FROM opc_invoices
+                 WHERE company_id = ? AND type = 'purchase' AND status IN ('issued') AND issue_date <= ?`,
+                p.company_id, queryDate,
+              ) as { total: number };
+              const accountsPayable = payablesResult?.total ?? 0;
+
+              // 长期负债（从融资记录获取）
+              const longTermDebtResult = db.queryOne(
+                `SELECT COALESCE(SUM(amount), 0) as total
+                 FROM opc_investment_rounds
+                 WHERE company_id = ? AND round_name LIKE '%债%' AND status = 'closed'`,
+                p.company_id,
+              ) as { total: number };
+              const longTermDebt = longTermDebtResult?.total ?? 0;
+
+              // 所有者权益 - 实收资本（从融资轮次）
+              const paidCapitalResult = db.queryOne(
+                `SELECT COALESCE(SUM(amount), 0) as total
+                 FROM opc_investment_rounds
+                 WHERE company_id = ? AND status = 'closed' AND close_date <= ?`,
+                p.company_id, queryDate,
+              ) as { total: number };
+              const paidCapital = paidCapitalResult?.total ?? 0;
+
+              // 留存收益（净利润累计）
+              const retainedEarningsResult = db.queryOne(
+                `SELECT COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END), 0) as total
+                 FROM opc_transactions
+                 WHERE company_id = ? AND transaction_date <= ?`,
+                p.company_id, queryDate,
+              ) as { total: number };
+              const retainedEarnings = (retainedEarningsResult?.total ?? 0) - paidCapital;
+
+              const totalAssets = cash + accountsReceivable + fixedAssets;
+              const totalLiabilities = accountsPayable + longTermDebt;
+              const totalEquity = paidCapital + retainedEarnings;
+
+              return json({
+                ok: true,
+                date: queryDate,
+                balance_sheet: {
+                  assets: {
+                    current_assets: {
+                      cash,
+                      accounts_receivable: accountsReceivable,
+                      total: cash + accountsReceivable,
+                    },
+                    fixed_assets: fixedAssets,
+                    total: totalAssets,
+                  },
+                  liabilities: {
+                    current_liabilities: {
+                      accounts_payable: accountsPayable,
+                      total: accountsPayable,
+                    },
+                    long_term_debt: longTermDebt,
+                    total: totalLiabilities,
+                  },
+                  equity: {
+                    paid_capital: paidCapital,
+                    retained_earnings: retainedEarnings,
+                    total: totalEquity,
+                  },
+                  total_liabilities_and_equity: totalLiabilities + totalEquity,
+                },
+                health_indicators: {
+                  current_ratio: accountsPayable > 0 ? ((cash + accountsReceivable) / accountsPayable).toFixed(2) : "N/A",
+                  debt_to_equity: totalEquity > 0 ? (totalLiabilities / totalEquity).toFixed(2) : "N/A",
+                  explanation: {
+                    current_ratio: "流动比率（流动资产/流动负债），健康值 > 1.5",
+                    debt_to_equity: "资产负债率（总负债/所有者权益），健康值 < 1",
+                  },
+                },
+              });
+            }
+
+            case "generate_income_statement": {
+              // 营业收入（销售类交易）
+              const revenueResult = db.queryOne(
+                `SELECT COALESCE(SUM(amount), 0) as total
+                 FROM opc_transactions
+                 WHERE company_id = ? AND type = 'income' AND category LIKE '%income%'
+                   AND transaction_date >= ? AND transaction_date <= ?`,
+                p.company_id, p.start_date, p.end_date,
+              ) as { total: number };
+              const revenue = revenueResult?.total ?? 0;
+
+              // 营业成本（采购、薪资、税费）
+              const costResult = db.queryOne(
+                `SELECT COALESCE(SUM(amount), 0) as total
+                 FROM opc_transactions
+                 WHERE company_id = ? AND type = 'expense' AND category IN ('salary', 'tax', 'supplies', 'rent', 'utilities')
+                   AND transaction_date >= ? AND transaction_date <= ?`,
+                p.company_id, p.start_date, p.end_date,
+              ) as { total: number };
+              const cost = costResult?.total ?? 0;
+
+              // 营销费用
+              const marketingResult = db.queryOne(
+                `SELECT COALESCE(SUM(amount), 0) as total
+                 FROM opc_transactions
+                 WHERE company_id = ? AND type = 'expense' AND category = 'marketing'
+                   AND transaction_date >= ? AND transaction_date <= ?`,
+                p.company_id, p.start_date, p.end_date,
+              ) as { total: number };
+              const marketing = marketingResult?.total ?? 0;
+
+              const grossProfit = revenue - cost;
+              const operatingProfit = grossProfit - marketing;
+              const netProfit = operatingProfit;
+
+              // 计算同比/环比（如果有历史数据）
+              const periodDays = Math.ceil((new Date(p.end_date).getTime() - new Date(p.start_date).getTime()) / (1000 * 60 * 60 * 24));
+              const prevStartDate = new Date(new Date(p.start_date).getTime() - periodDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+              const prevEndDate = new Date(new Date(p.end_date).getTime() - periodDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+              const prevRevenueResult = db.queryOne(
+                `SELECT COALESCE(SUM(amount), 0) as total
+                 FROM opc_transactions
+                 WHERE company_id = ? AND type = 'income' AND category LIKE '%income%'
+                   AND transaction_date >= ? AND transaction_date <= ?`,
+                p.company_id, prevStartDate, prevEndDate,
+              ) as { total: number };
+              const prevRevenue = prevRevenueResult?.total ?? 0;
+
+              const revenueGrowth = prevRevenue > 0 ? ((revenue - prevRevenue) / prevRevenue * 100).toFixed(2) + "%" : "N/A";
+
+              return json({
+                ok: true,
+                period: { start_date: p.start_date, end_date: p.end_date },
+                income_statement: {
+                  revenue,
+                  cost_of_revenue: cost,
+                  gross_profit: grossProfit,
+                  gross_margin: revenue > 0 ? ((grossProfit / revenue) * 100).toFixed(2) + "%" : "0%",
+                  operating_expenses: {
+                    marketing,
+                    total: marketing,
+                  },
+                  operating_profit: operatingProfit,
+                  operating_margin: revenue > 0 ? ((operatingProfit / revenue) * 100).toFixed(2) + "%" : "0%",
+                  net_profit: netProfit,
+                  net_margin: revenue > 0 ? ((netProfit / revenue) * 100).toFixed(2) + "%" : "0%",
+                },
+                growth_metrics: {
+                  revenue_growth_mom: revenueGrowth,
+                  explanation: "环比增长率：与上一周期相比的收入增长百分比",
+                },
+              });
+            }
+
+            case "generate_cashflow_statement": {
+              // 经营活动现金流
+              const operatingCashResult = db.queryOne(
+                `SELECT
+                   COALESCE(SUM(CASE WHEN type = 'income' AND category LIKE '%income%' THEN amount ELSE 0 END), 0) as inflow,
+                   COALESCE(SUM(CASE WHEN type = 'expense' AND category IN ('salary', 'rent', 'utilities', 'marketing', 'tax') THEN amount ELSE 0 END), 0) as outflow
+                 FROM opc_transactions
+                 WHERE company_id = ? AND transaction_date >= ? AND transaction_date <= ?`,
+                p.company_id, p.start_date, p.end_date,
+              ) as { inflow: number; outflow: number };
+
+              const operatingInflow = operatingCashResult?.inflow ?? 0;
+              const operatingOutflow = operatingCashResult?.outflow ?? 0;
+              const operatingCashFlow = operatingInflow - operatingOutflow;
+
+              // 投资活动现金流（固定资产购置）
+              const investingCashResult = db.queryOne(
+                `SELECT COALESCE(SUM(amount), 0) as total
+                 FROM opc_transactions
+                 WHERE company_id = ? AND type = 'expense' AND category = 'supplies'
+                   AND transaction_date >= ? AND transaction_date <= ?`,
+                p.company_id, p.start_date, p.end_date,
+              ) as { total: number };
+              const investingCashFlow = -(investingCashResult?.total ?? 0);
+
+              // 筹资活动现金流（融资收入）
+              const financingCashResult = db.queryOne(
+                `SELECT COALESCE(SUM(amount), 0) as total
+                 FROM opc_investment_rounds
+                 WHERE company_id = ? AND status = 'closed'
+                   AND close_date >= ? AND close_date <= ?`,
+                p.company_id, p.start_date, p.end_date,
+              ) as { total: number };
+              const financingCashFlow = financingCashResult?.total ?? 0;
+
+              const netCashChange = operatingCashFlow + investingCashFlow + financingCashFlow;
+
+              // 期初现金余额
+              const openingCashResult = db.queryOne(
+                `SELECT COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END), 0) as total
+                 FROM opc_transactions
+                 WHERE company_id = ? AND transaction_date < ?`,
+                p.company_id, p.start_date,
+              ) as { total: number };
+              const openingCash = openingCashResult?.total ?? 0;
+              const closingCash = openingCash + netCashChange;
+
+              return json({
+                ok: true,
+                period: { start_date: p.start_date, end_date: p.end_date },
+                cashflow_statement: {
+                  operating_activities: {
+                    sales_receipts: operatingInflow,
+                    operating_expenses: -operatingOutflow,
+                    net: operatingCashFlow,
+                  },
+                  investing_activities: {
+                    asset_purchases: investingCashFlow,
+                    net: investingCashFlow,
+                  },
+                  financing_activities: {
+                    investment_received: financingCashFlow,
+                    net: financingCashFlow,
+                  },
+                  net_cash_change: netCashChange,
+                  opening_cash: openingCash,
+                  closing_cash: closingCash,
+                },
+                health_indicators: {
+                  ocf_positive: operatingCashFlow > 0,
+                  cash_runway_months: operatingOutflow > 0 ? Math.floor(closingCash / (operatingOutflow / Math.ceil((new Date(p.end_date).getTime() - new Date(p.start_date).getTime()) / (1000 * 60 * 60 * 24 * 30)))) : "N/A",
+                  explanation: "现金流健康指标：经营现金流为正说明业务自给自足，现金跑道表示当前余额可维持几个月运营",
+                },
+              });
+            }
+
+            case "calculate_customer_ltv": {
+              if (p.customer_id) {
+                // 特定客户的 LTV
+                const transactions = db.query(
+                  `SELECT amount, transaction_date
+                   FROM opc_transactions
+                   WHERE company_id = ? AND type = 'income' AND counterparty = (
+                     SELECT name FROM opc_contacts WHERE id = ?
+                   )
+                   ORDER BY transaction_date`,
+                  p.company_id, p.customer_id,
+                ) as { amount: number; transaction_date: string }[];
+
+                if (transactions.length === 0) {
+                  return json({
+                    ok: false,
+                    message: "该客户暂无交易记录",
+                  });
+                }
+
+                const totalRevenue = transactions.reduce((sum, t) => sum + t.amount, 0);
+                const avgOrderValue = totalRevenue / transactions.length;
+                const firstDate = new Date(transactions[0].transaction_date);
+                const lastDate = new Date(transactions[transactions.length - 1].transaction_date);
+                const lifespanDays = Math.max(1, Math.ceil((lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)));
+                const purchaseFrequency = transactions.length / (lifespanDays / 30);
+                const ltv = avgOrderValue * purchaseFrequency * (lifespanDays / 30);
+
+                return json({
+                  ok: true,
+                  customer_id: p.customer_id,
+                  ltv_analysis: {
+                    average_order_value: avgOrderValue.toFixed(2),
+                    purchase_frequency_per_month: purchaseFrequency.toFixed(2),
+                    customer_lifespan_months: (lifespanDays / 30).toFixed(1),
+                    lifetime_value: ltv.toFixed(2),
+                    total_transactions: transactions.length,
+                    total_revenue: totalRevenue.toFixed(2),
+                  },
+                });
+              } else {
+                // 所有客户的平均 LTV
+                const customers = db.query(
+                  `SELECT id, name FROM opc_contacts WHERE company_id = ?`,
+                  p.company_id,
+                ) as { id: string; name: string }[];
+
+                let totalLTV = 0;
+                let customerCount = 0;
+
+                for (const customer of customers) {
+                  const transactions = db.query(
+                    `SELECT amount, transaction_date
+                     FROM opc_transactions
+                     WHERE company_id = ? AND type = 'income' AND counterparty = ?
+                     ORDER BY transaction_date`,
+                    p.company_id, customer.name,
+                  ) as { amount: number; transaction_date: string }[];
+
+                  if (transactions.length === 0) continue;
+
+                  const totalRevenue = transactions.reduce((sum, t) => sum + t.amount, 0);
+                  const avgOrderValue = totalRevenue / transactions.length;
+                  const firstDate = new Date(transactions[0].transaction_date);
+                  const lastDate = new Date(transactions[transactions.length - 1].transaction_date);
+                  const lifespanDays = Math.max(1, Math.ceil((lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)));
+                  const purchaseFrequency = transactions.length / (lifespanDays / 30);
+                  const ltv = avgOrderValue * purchaseFrequency * (lifespanDays / 30);
+
+                  totalLTV += ltv;
+                  customerCount++;
+                }
+
+                const avgLTV = customerCount > 0 ? totalLTV / customerCount : 0;
+
+                return json({
+                  ok: true,
+                  ltv_analysis: {
+                    average_lifetime_value: avgLTV.toFixed(2),
+                    customer_count: customerCount,
+                    explanation: "客户生命周期价值（LTV）= 平均订单价值 × 购买频率 × 客户生命周期",
+                  },
+                });
+              }
+            }
+
+            case "calculate_acquisition_cost": {
+              // 解析期间
+              const periodStr = p.period;
+              let startDate: string, endDate: string;
+
+              if (periodStr.includes("Q")) {
+                const [year, q] = periodStr.split("-Q");
+                const quarter = parseInt(q);
+                const startMonth = (quarter - 1) * 3 + 1;
+                startDate = `${year}-${String(startMonth).padStart(2, "0")}-01`;
+                const endMonth = quarter * 3;
+                const lastDay = new Date(parseInt(year), endMonth, 0).getDate();
+                endDate = `${year}-${String(endMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+              } else {
+                startDate = `${periodStr}-01`;
+                const [year, month] = periodStr.split("-");
+                const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate();
+                endDate = `${periodStr}-${String(lastDay).padStart(2, "0")}`;
+              }
+
+              // 营销支出总额
+              const marketingSpendResult = db.queryOne(
+                `SELECT COALESCE(SUM(amount), 0) as total
+                 FROM opc_transactions
+                 WHERE company_id = ? AND type = 'expense' AND category = 'marketing'
+                   AND transaction_date >= ? AND transaction_date <= ?`,
+                p.company_id, startDate, endDate,
+              ) as { total: number };
+              const marketingSpend = marketingSpendResult?.total ?? 0;
+
+              // 新增客户数
+              const newCustomersResult = db.queryOne(
+                `SELECT COUNT(*) as count
+                 FROM opc_contacts
+                 WHERE company_id = ? AND created_at >= ? AND created_at <= ?`,
+                p.company_id, startDate, endDate + " 23:59:59",
+              ) as { count: number };
+              const newCustomers = newCustomersResult?.count ?? 0;
+
+              const cac = newCustomers > 0 ? marketingSpend / newCustomers : 0;
+
+              // 获取平均 LTV 用于计算 LTV/CAC 比率
+              const customers = db.query(
+                `SELECT id, name FROM opc_contacts WHERE company_id = ?`,
+                p.company_id,
+              ) as { id: string; name: string }[];
+
+              let totalLTV = 0;
+              let customerCount = 0;
+
+              for (const customer of customers) {
+                const transactions = db.query(
+                  `SELECT amount, transaction_date
+                   FROM opc_transactions
+                   WHERE company_id = ? AND type = 'income' AND counterparty = ?
+                   ORDER BY transaction_date`,
+                  p.company_id, customer.name,
+                ) as { amount: number; transaction_date: string }[];
+
+                if (transactions.length === 0) continue;
+
+                const totalRevenue = transactions.reduce((sum, t) => sum + t.amount, 0);
+                const avgOrderValue = totalRevenue / transactions.length;
+                const firstDate = new Date(transactions[0].transaction_date);
+                const lastDate = new Date(transactions[transactions.length - 1].transaction_date);
+                const lifespanDays = Math.max(1, Math.ceil((lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)));
+                const purchaseFrequency = transactions.length / (lifespanDays / 30);
+                const ltv = avgOrderValue * purchaseFrequency * (lifespanDays / 30);
+
+                totalLTV += ltv;
+                customerCount++;
+              }
+
+              const avgLTV = customerCount > 0 ? totalLTV / customerCount : 0;
+              const ltvCacRatio = cac > 0 ? avgLTV / cac : 0;
+
+              return json({
+                ok: true,
+                period: periodStr,
+                cac_analysis: {
+                  marketing_spend: marketingSpend.toFixed(2),
+                  new_customers: newCustomers,
+                  customer_acquisition_cost: cac.toFixed(2),
+                  average_ltv: avgLTV.toFixed(2),
+                  ltv_cac_ratio: ltvCacRatio.toFixed(2),
+                  health_status: ltvCacRatio > 3 ? "健康（LTV/CAC > 3）" : ltvCacRatio > 1 ? "尚可（LTV/CAC > 1）" : "需优化（LTV/CAC < 1）",
+                  explanation: "获客成本（CAC）= 营销支出 / 新增客户数。健康的 LTV/CAC 比率应 > 3",
+                },
+              });
+            }
+
+            case "unit_economics_analysis": {
+              // 从最近的交易数据推算单位经济学
+              const recentRevenue = db.queryOne(
+                `SELECT COALESCE(SUM(amount), 0) as total, COUNT(*) as count
+                 FROM opc_transactions
+                 WHERE company_id = ? AND type = 'income' AND category LIKE '%income%'
+                   AND transaction_date >= date('now', '-30 days')`,
+                p.company_id,
+              ) as { total: number; count: number };
+
+              const recentCost = db.queryOne(
+                `SELECT COALESCE(SUM(amount), 0) as total
+                 FROM opc_transactions
+                 WHERE company_id = ? AND type = 'expense'
+                   AND transaction_date >= date('now', '-30 days')`,
+                p.company_id,
+              ) as { total: number };
+
+              const units = recentRevenue.count > 0 ? recentRevenue.count : 1;
+              const revenuePerUnit = recentRevenue.total / units;
+              const costPerUnit = recentCost.total / units;
+              const contributionMargin = revenuePerUnit - costPerUnit;
+              const contributionMarginRate = revenuePerUnit > 0 ? (contributionMargin / revenuePerUnit) * 100 : 0;
+
+              // 盈亏平衡点计算（假设有固定成本）
+              const fixedCost = db.queryOne(
+                `SELECT COALESCE(SUM(amount), 0) as total
+                 FROM opc_transactions
+                 WHERE company_id = ? AND type = 'expense' AND category IN ('rent', 'salary')
+                   AND transaction_date >= date('now', '-30 days')`,
+                p.company_id,
+              ) as { total: number };
+
+              const breakEvenUnits = contributionMargin > 0 ? Math.ceil(fixedCost.total / contributionMargin) : 0;
+
+              return json({
+                ok: true,
+                unit_economics: {
+                  revenue_per_unit: revenuePerUnit.toFixed(2),
+                  cost_per_unit: costPerUnit.toFixed(2),
+                  contribution_margin: contributionMargin.toFixed(2),
+                  contribution_margin_rate: contributionMarginRate.toFixed(2) + "%",
+                  units_analyzed: units,
+                },
+                break_even_analysis: {
+                  fixed_cost_monthly: fixedCost.total.toFixed(2),
+                  break_even_units: breakEvenUnits,
+                  explanation: "盈亏平衡点 = 固定成本 / 单位贡献边际",
+                },
+                health_indicators: {
+                  status: contributionMarginRate > 50 ? "优秀" : contributionMarginRate > 30 ? "良好" : "需优化",
+                  recommendation: contributionMarginRate < 30 ? "建议提高定价或降低变动成本" : "单位经济学健康",
+                },
+                data_note: "基于最近 30 天交易数据计算",
+              });
+            }
+
+            case "generate_funding_datapack": {
+              // 获取公司基本信息
+              const company = db.queryOne(
+                `SELECT * FROM opc_companies WHERE id = ?`,
+                p.company_id,
+              );
+              if (!company) {
+                return toolError("公司不存在", "COMPANY_NOT_FOUND");
+              }
+
+              // 过去 12 个月财务数据
+              const now = new Date();
+              const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 12, 1).toISOString().slice(0, 10);
+              const today = now.toISOString().slice(0, 10);
+
+              // 生成利润表
+              const revenueResult = db.queryOne(
+                `SELECT COALESCE(SUM(amount), 0) as total
+                 FROM opc_transactions
+                 WHERE company_id = ? AND type = 'income' AND category LIKE '%income%'
+                   AND transaction_date >= ? AND transaction_date <= ?`,
+                p.company_id, twelveMonthsAgo, today,
+              ) as { total: number };
+              const revenue = revenueResult?.total ?? 0;
+
+              const costResult = db.queryOne(
+                `SELECT COALESCE(SUM(amount), 0) as total
+                 FROM opc_transactions
+                 WHERE company_id = ? AND type = 'expense'
+                   AND transaction_date >= ? AND transaction_date <= ?`,
+                p.company_id, twelveMonthsAgo, today,
+              ) as { total: number };
+              const cost = costResult?.total ?? 0;
+
+              const profit = revenue - cost;
+              const profitMargin = revenue > 0 ? ((profit / revenue) * 100).toFixed(2) + "%" : "0%";
+
+              // 现金余额
+              const cashResult = db.queryOne(
+                `SELECT COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END), 0) as total
+                 FROM opc_transactions
+                 WHERE company_id = ? AND transaction_date <= ?`,
+                p.company_id, today,
+              ) as { total: number };
+              const cash = cashResult?.total ?? 0;
+
+              // 客户分析
+              const customers = db.query(
+                `SELECT id, name FROM opc_contacts WHERE company_id = ?`,
+                p.company_id,
+              ) as { id: string; name: string }[];
+
+              let totalLTV = 0;
+              let customerCount = 0;
+
+              for (const customer of customers) {
+                const transactions = db.query(
+                  `SELECT amount, transaction_date
+                   FROM opc_transactions
+                   WHERE company_id = ? AND type = 'income' AND counterparty = ?
+                   ORDER BY transaction_date`,
+                  p.company_id, customer.name,
+                ) as { amount: number; transaction_date: string }[];
+
+                if (transactions.length === 0) continue;
+
+                const totalRevenue = transactions.reduce((sum, t) => sum + t.amount, 0);
+                const avgOrderValue = totalRevenue / transactions.length;
+                const firstDate = new Date(transactions[0].transaction_date);
+                const lastDate = new Date(transactions[transactions.length - 1].transaction_date);
+                const lifespanDays = Math.max(1, Math.ceil((lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)));
+                const purchaseFrequency = transactions.length / (lifespanDays / 30);
+                const ltv = avgOrderValue * purchaseFrequency * (lifespanDays / 30);
+
+                totalLTV += ltv;
+                customerCount++;
+              }
+
+              const avgLTV = customerCount > 0 ? totalLTV / customerCount : 0;
+
+              // 团队信息
+              const team = db.query(
+                `SELECT employee_name, position, status FROM opc_hr_records WHERE company_id = ? AND status = 'active'`,
+                p.company_id,
+              );
+
+              // 融资历史
+              const fundingHistory = db.query(
+                `SELECT round_name, amount, valuation_post, lead_investor, close_date, status
+                 FROM opc_investment_rounds
+                 WHERE company_id = ?
+                 ORDER BY close_date DESC`,
+                p.company_id,
+              );
+
+              // 商业模式
+              const businessModel = db.queryOne(
+                `SELECT * FROM opc_opb_canvas WHERE company_id = ?`,
+                p.company_id,
+              );
+
+              // 月度增长率（最近 3 个月）
+              const monthlyGrowth = [];
+              for (let i = 0; i < 3; i++) {
+                const monthStart = new Date(now.getFullYear(), now.getMonth() - i - 1, 1).toISOString().slice(0, 10);
+                const monthEnd = new Date(now.getFullYear(), now.getMonth() - i, 0).toISOString().slice(0, 10);
+                const monthRevenue = db.queryOne(
+                  `SELECT COALESCE(SUM(amount), 0) as total
+                   FROM opc_transactions
+                   WHERE company_id = ? AND type = 'income' AND category LIKE '%income%'
+                     AND transaction_date >= ? AND transaction_date <= ?`,
+                  p.company_id, monthStart, monthEnd,
+                ) as { total: number };
+                monthlyGrowth.push({
+                  month: monthStart.slice(0, 7),
+                  revenue: monthRevenue?.total ?? 0,
+                });
+              }
+
+              // 计算环比增长率
+              const growthRates = [];
+              for (let i = 0; i < monthlyGrowth.length - 1; i++) {
+                const current = monthlyGrowth[i].revenue;
+                const previous = monthlyGrowth[i + 1].revenue;
+                const growthRate = previous > 0 ? ((current - previous) / previous * 100).toFixed(2) + "%" : "N/A";
+                growthRates.push({
+                  period: `${monthlyGrowth[i + 1].month} -> ${monthlyGrowth[i].month}`,
+                  growth_rate: growthRate,
+                });
+              }
+
+              return json({
+                ok: true,
+                generated_at: now.toISOString(),
+                funding_datapack: {
+                  company_info: company,
+                  financial_summary: {
+                    period: `${twelveMonthsAgo} 至 ${today}`,
+                    revenue: revenue.toFixed(2),
+                    cost: cost.toFixed(2),
+                    profit: profit.toFixed(2),
+                    profit_margin: profitMargin,
+                    cash_balance: cash.toFixed(2),
+                  },
+                  growth_metrics: {
+                    monthly_revenue: monthlyGrowth,
+                    growth_rates: growthRates,
+                    revenue_growth_trend: growthRates.length > 0 ? "详见 growth_rates" : "数据不足",
+                  },
+                  customer_metrics: {
+                    total_customers: customers.length,
+                    active_customers: customerCount,
+                    average_ltv: avgLTV.toFixed(2),
+                  },
+                  team: team,
+                  funding_history: fundingHistory,
+                  business_model: businessModel ?? "未填写 OPB 画布",
+                },
+                usage_note: "此数据包可直接发送给投资人或用于商业计划书制作",
+              });
             }
 
             default:
