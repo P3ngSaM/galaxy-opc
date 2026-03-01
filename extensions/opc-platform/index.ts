@@ -319,7 +319,7 @@ const plugin = {
           if (channel && peerId) {
             return {
               params: {
-                ...event.params as Record<string, unknown>,
+                ...(event.params as Record<string, unknown> || {}),
                 _channel: channel,
                 _peer_id: peerId,
               },

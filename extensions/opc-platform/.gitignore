@@ -21,6 +21,9 @@ dist/
 *.sqlite
 *.sqlite3
 
+# Exported documents and reports
+exports/
+
 # Environment & secrets
 .env
 .env.local

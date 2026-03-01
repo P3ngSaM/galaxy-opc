@@ -484,12 +484,32 @@ async function exportToDocx(
     ],
   });
 
-  const finalPath =
-    outputPath ||
-    path.join(
-      os.tmpdir(),
-      `opc_doc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.docx`,
-    );
+  let finalPath: string;
+
+  if (outputPath) {
+    finalPath = outputPath;
+  } else {
+    // 使用项目根目录下的 exports/documents 文件夹
+    const exportsDir = path.join(process.cwd(), 'exports', 'documents');
+    fs.mkdirSync(exportsDir, { recursive: true });
+
+    // 使用文档标题和日期作为文件名
+    const safeTitle = title.replace(/[^\w\u4e00-\u9fa5-]/g, '_').slice(0, 50);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    finalPath = path.join(exportsDir, `${safeTitle}_${dateStr}.docx`);
+
+    // 如果文件已存在，添加序号
+    let counter = 1;
+    let testPath = finalPath;
+    while (fs.existsSync(testPath)) {
+      testPath = path.join(
+        exportsDir,
+        `${safeTitle}_${dateStr}_${counter}.docx`
+      );
+      counter++;
+    }
+    finalPath = testPath;
+  }
 
   const buffer = await Packer.toBuffer(doc);
   fs.writeFileSync(finalPath, buffer);
@@ -508,12 +528,32 @@ async function exportToPdf(
   content: string,
   outputPath?: string,
 ): Promise<{ file_path: string; file_size: number }> {
-  const finalPath =
-    outputPath ||
-    path.join(
-      os.tmpdir(),
-      `opc_doc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.pdf`,
-    );
+  let finalPath: string;
+
+  if (outputPath) {
+    finalPath = outputPath;
+  } else {
+    // 使用项目根目录下的 exports/documents 文件夹
+    const exportsDir = path.join(process.cwd(), 'exports', 'documents');
+    fs.mkdirSync(exportsDir, { recursive: true });
+
+    // 使用文档标题和日期作为文件名
+    const safeTitle = title.replace(/[^\w\u4e00-\u9fa5-]/g, '_').slice(0, 50);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    finalPath = path.join(exportsDir, `${safeTitle}_${dateStr}.pdf`);
+
+    // 如果文件已存在，添加序号
+    let counter = 1;
+    let testPath = finalPath;
+    while (fs.existsSync(testPath)) {
+      testPath = path.join(
+        exportsDir,
+        `${safeTitle}_${dateStr}_${counter}.pdf`
+      );
+      counter++;
+    }
+    finalPath = testPath;
+  }
 
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: "A4", margin: 50 });
@@ -580,12 +620,39 @@ async function generateFinancialReportExcel(
     throw new Error(`公司 ${companyId} 不存在`);
   }
 
-  const finalPath =
-    outputPath ||
-    path.join(
-      os.tmpdir(),
-      `opc_financial_${reportType}_${Date.now()}.xlsx`,
-    );
+  let finalPath: string;
+
+  if (outputPath) {
+    finalPath = outputPath;
+  } else {
+    // 使用项目根目录下的 exports/reports 文件夹
+    const exportsDir = path.join(process.cwd(), 'exports', 'reports');
+    fs.mkdirSync(exportsDir, { recursive: true });
+
+    const reportTypeNames: Record<string, string> = {
+      balance_sheet: '资产负债表',
+      income_statement: '利润表',
+      cashflow: '现金流量表',
+    };
+
+    const safeCompanyName = String(company.name).replace(/[^\w\u4e00-\u9fa5-]/g, '_').slice(0, 30);
+    const reportName = reportTypeNames[reportType] || reportType;
+    const dateStr = new Date().toISOString().slice(0, 10);
+
+    finalPath = path.join(exportsDir, `${safeCompanyName}_${reportName}_${dateStr}.xlsx`);
+
+    // 如果文件已存在，添加序号
+    let counter = 1;
+    let testPath = finalPath;
+    while (fs.existsSync(testPath)) {
+      testPath = path.join(
+        exportsDir,
+        `${safeCompanyName}_${reportName}_${dateStr}_${counter}.xlsx`
+      );
+      counter++;
+    }
+    finalPath = testPath;
+  }
 
   if (reportType === "balance_sheet") {
     // 资产负债表
@@ -996,11 +1063,23 @@ export function registerDocumentTool(api: OpenClawPluginApi, db: OpcDatabase): v
                 return toolError("Excel 格式仅支持财务报表，请使用 generate_financial_report", "INVALID_INPUT");
               }
 
+              // 计算相对于当前工作目录的相对路径
+              const relativePath = path.relative(process.cwd(), result.file_path);
+
               return json({
                 ok: true,
+                message: `✅ 文档已成功导出为 ${p.format.toUpperCase()} 格式`,
                 document_id: p.document_id,
                 format: p.format,
-                ...result,
+                file_path: result.file_path,
+                relative_path: relativePath,
+                file_size: result.file_size,
+                file_size_mb: (result.file_size / 1024 / 1024).toFixed(2),
+                instructions: [
+                  `📁 文件位置: ${relativePath}`,
+                  `📊 文件大小: ${(result.file_size / 1024).toFixed(2)} KB`,
+                  `💡 提示: 您可以在项目根目录下的 exports/ 文件夹中找到所有导出的文档`,
+                ],
               });
             }
 
@@ -1014,30 +1093,71 @@ export function registerDocumentTool(api: OpenClawPluginApi, db: OpcDatabase): v
                 p.output_path,
               );
 
+              // 计算相对路径
+              const relativePath = path.relative(process.cwd(), result.file_path);
+
+              const reportTypeNames: Record<string, string> = {
+                balance_sheet: '资产负债表',
+                income_statement: '利润表',
+                cashflow: '现金流量表',
+              };
+
               // 如果是 PDF 格式，需要转换
               if (p.format === "pdf") {
                 // 先生成 Excel，然后用户可以手动转换
                 // 或者可以在这里添加 Excel 到 PDF 的转换逻辑
                 return json({
                   ok: true,
-                  message: "财务报表已生成为 Excel 格式，如需 PDF 请使用 Office 或在线工具转换",
-                  ...result,
+                  message: `✅ 财务报表已生成为 Excel 格式（${reportTypeNames[p.report_type] || p.report_type}）`,
+                  note: "如需 PDF 请使用 Office 或在线工具转换",
+                  file_path: result.file_path,
+                  relative_path: relativePath,
+                  file_size: result.file_size,
+                  file_size_mb: (result.file_size / 1024 / 1024).toFixed(2),
+                  summary: result.summary,
+                  instructions: [
+                    `📁 文件位置: ${relativePath}`,
+                    `📊 文件大小: ${(result.file_size / 1024).toFixed(2)} KB`,
+                    `💡 提示: 您可以在项目根目录下的 exports/reports/ 文件夹中找到所有财务报表`,
+                  ],
                 });
               }
 
               return json({
                 ok: true,
-                ...result,
+                message: `✅ ${reportTypeNames[p.report_type] || p.report_type}已生成`,
+                file_path: result.file_path,
+                relative_path: relativePath,
+                file_size: result.file_size,
+                file_size_mb: (result.file_size / 1024 / 1024).toFixed(2),
+                summary: result.summary,
+                instructions: [
+                  `📁 文件位置: ${relativePath}`,
+                  `📊 文件大小: ${(result.file_size / 1024).toFixed(2)} KB`,
+                  `💡 提示: 您可以在项目根目录下的 exports/reports/ 文件夹中找到所有财务报表`,
+                ],
               });
             }
 
             case "generate_business_plan": {
               const result = await generateBusinessPlan(db, p.company_id, p.format, p.output_path);
 
+              // 计算相对路径
+              const relativePath = path.relative(process.cwd(), result.file_path);
+
               return json({
                 ok: true,
+                message: `✅ 商业计划书已生成为 ${p.format.toUpperCase()} 格式`,
                 format: p.format,
-                ...result,
+                file_path: result.file_path,
+                relative_path: relativePath,
+                file_size: result.file_size,
+                file_size_mb: (result.file_size / 1024 / 1024).toFixed(2),
+                instructions: [
+                  `📁 文件位置: ${relativePath}`,
+                  `📊 文件大小: ${(result.file_size / 1024).toFixed(2)} KB`,
+                  `💡 提示: 您可以在项目根目录下的 exports/documents/ 文件夹中找到所有导出的文档`,
+                ],
               });
             }
 
